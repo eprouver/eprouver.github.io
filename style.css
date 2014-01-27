@@ -1,0 +1,237 @@
+
+body {
+	font-family: 'Averia Sans Libre', cursive;
+	background: #fdfacc; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmRmYWNjIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2NjZjNmZCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+	background: -moz-linear-gradient(-45deg,  #fdfacc 0%, #ccf3fd 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fdfacc), color-stop(100%,#ccf3fd)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* IE10+ */
+	background: linear-gradient(135deg,  #fdfacc 0%,#ccf3fd 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fdfacc', endColorstr='#ccf3fd',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+}
+
+button {
+	outline: none;
+}
+
+p {
+	color: #46608F;
+}
+
+a {
+	color: #46608F;
+	text-decoration: underline;
+}
+
+a:hover {
+	color: #6797CF;
+	text-decoration: none;
+}
+
+#main {
+	width: 1400px;
+	height: 900px;
+	position: relative;
+	margin: 0 auto;
+}
+
+canvas#canvas {
+    margin: 0px auto;
+    width:1400px; 
+    height: 900px; 
+    display: block;
+}
+canvas#vidcan {
+	position: absolute;
+	left: 885px;
+	width: 500px;
+	height: 360px;
+	top: 528px;
+}
+
+video {
+	-webkit-filter: grayscale(0) blur(59px) saturate(600%);
+	-moz-filter: grayscale(0) blur(59px) saturate(600%);
+	-ms-filter: grayscale(0) blur(59px) saturate(600%);
+	-o-filter: grayscale(0) blur(59px) saturate(600%);
+	filter: grayscale(0) blur(59px) saturate(600%);
+	position: absolute;
+	top: 50px;
+	opacity: .4;
+	left: 50%;
+	margin-left: -700px;
+}
+
+.add-bag {
+	position: absolute;
+	right: 30px;
+	top: 30px;
+	background: #2ECC71;
+	border: 0;
+	padding: 20px 40px;
+	font-size: 30px;
+	border-radius: 30px;
+	font-family: 'Averia Sans Libre', cursive;
+	color: #FFF;
+}
+
+
+.snap-photo {
+	background: #22DA5D;
+	border: 2px solid #00A23A;
+	padding: 20px;
+	color: #005E00;
+	position: absolute;
+	left: 1252px;
+	top: 112px;
+	font-size: 16px;
+}
+
+.music {
+	position: absolute;
+	left: 30px;
+	top: 30px;
+	background: #5f7fa3;
+	border: 0;
+	padding: 1px 10px 2px;
+	font-size: 30px;
+	border-radius: 30px;
+	font-family: 'Averia Sans Libre', cursive;
+	color: #FFF;
+}
+
+.next-level {
+	position: absolute;
+	left: 100px;
+	top: 30px;
+	background: #5f7fa3;
+	border: 0;
+	padding: 10px 20px;
+	font-size: 20px;
+	border-radius: 30px;
+	font-family: 'Averia Sans Libre', cursive;
+	color: #FFF;
+}
+
+.camera, .happy, .sad{
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	padding: 20px;
+	box-sizing: border-box;
+	text-align: center;
+	background: #fdfacc; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmRmYWNjIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2NjZjNmZCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+	background: -moz-linear-gradient(-45deg,  #fdfacc 0%, #ccf3fd 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fdfacc), color-stop(100%,#ccf3fd)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(-45deg,  #fdfacc 0%,#ccf3fd 100%); /* IE10+ */
+	background: linear-gradient(135deg,  #fdfacc 0%,#ccf3fd 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fdfacc', endColorstr='#ccf3fd',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
+}
+
+.camera h1 {
+	padding: 30px;
+	font-size: 70px;
+}
+
+.camera button {
+	background: #2ECC71;
+	border: 0;
+	padding: 30px 60px;
+	font-size: 40px;
+	border-radius: 30px;
+	font-family: 'Averia Sans Libre', cursive;
+	color: #FFF;
+}
+
+.allow h1 {
+	color: #5f7fa3;
+	font-size: 76px;
+}
+.allow h2 {
+	margin: -30px -20px;
+	padding: 20px 20px 46px;
+	background: #D35400;
+	color: #F5F5F5;
+	margin-top: 70px;
+	font-size: 30px;
+}
+
+.happy {
+	background: #f1c40f;
+}
+
+.happy h1{
+	color: white;
+}
+
+.sad {
+	background: #34495e;
+}
+
+.sad h1 {
+	color: white;
+}
+
+#happy, #sad{
+	display:none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-size: cover !important;
+}
+
+#happy{
+	background: url(./img/happy.png);
+}
+
+#sad{
+	background: url(./img/sad.png);
+}
+
+#happy canvas, #sad canvas{
+	width: 100%;
+	height: 100%;
+}
+
+.hide{
+	display:none;
+}
+
+.footer {
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+}
+
+.table {
+	position: absolute;
+	top: 908px;
+	right: 0;
+	width: 100%;
+	height: 50%;
+	background: #bbf0fe;
+
+}
+
+
+
+
+

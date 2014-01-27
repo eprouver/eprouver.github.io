@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+   <head>
+      <title>Drop the Tea</title>
+      <link href='http://fonts.googleapis.com/css?family=Averia+Sans+Libre' rel='stylesheet' type='text/css'>
+      <link href="/style.css" rel="stylesheet">
+      <!--[if gte IE 9]>
+      <style type="text/css">
+       .gradient {
+          filter: none;
+       }
+      </style>
+      <![endif]-->
+   </head>
+
+   <body class="gradient">
+<video id="video" width="1400" height="800" autoplay></video>
+      <div id="main">
+      
+         
+         <canvas id="vidcan" width="640" height="480"></canvas>
+
+         <canvas id="canvas" width="1400" height="900"></canvas>
+         <button class="add-bag" onclick="addBag()">Add Bag</button>
+         <button class="music" onclick="toggletheme()">♪</button>
+         <!-- <button class="snap-photo" id="snap">Snap Photo</button> -->
+         <button class="next-level" onclick="nextLevel()">Next Level</button>
+
+         <div class="camera allow" id="camera1">
+            <h1>Drop the Tea</h1>
+
+            <h2>Allow Camera Access Above</h2>
+
+            <button onclick="next('camera1','camera2')">Start Game</button>
+
+            <div class="footer">
+
+               <p><b>Theme: <i>"We don't see things as they are, we see them as we are" and "Tea".</b></i></p>
+                  
+               <p>An weekend hackathon production, in <a href="https://twitter.com/odobo" target="_blank">@odobo</a> office, starring <a href="https://twitter.com/carribus" target="_blank">@carribus</a>, <a href="https://twitter.com/dcoheny" target="_blank">@dcoheny</a>, <a href="https://twitter.com/javimaravillas" target="_blank">@javimaravillas</a> and <a href="https://twitter.com/AlexandruBiet" target="_blank">@AlexandruBiet</a>.</p>
+
+               <p>With the intent of submiting the game to <a href="http://globalgamejam.org/">Globe Game Jam 2014</a> (<a href="https://twitter.com/search?q=%23ggj14&src=typd" target="_blank">#GGJ14</a>) and the reality of submiting it to <a href="http://poormansggj.weebly.com/" target="_blank" target="_blank">Poor Man's Globe Game Jam</a> instead.</p>
+
+            
+            </div>
+         </div>
+
+         <div class="camera happy hide" id="camera2">
+
+            <h1>Make a Happy Face (:</h1>
+            <button onclick="next('camera2','camera3', 'happy')" id="camera1">OK</button>
+            
+         </div>
+
+         <div class="camera sad hide" id="camera3">
+            <h1>Make a Sad Face ):</h1>
+            <button onclick="next('camera3', '', 'sad')" id="camera1">OK</button>
+         </div>
+
+         <div id="happy" class="hide">
+         </div>
+
+         <div id="sad" class="hide">
+         </div>
+      </div>
+      <script type="text/javascript" src="/howler.js"></script>
+      <script type="text/javascript" src="/levels.js"></script>
+      <script type="text/javascript" src="/Box2dWeb-2.1.a.3.js"></script>
+      <script type="text/javascript" src="/main.js"></script>
+      <script type="text/javascript" src="/video.js"></script>
+
+   </body>
+
+</html>
+
