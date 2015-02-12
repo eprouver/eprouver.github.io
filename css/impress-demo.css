@@ -178,6 +178,7 @@ a:focus {
     font-family: 'PT Serif', georgia, serif;
     font-size: 48px;
     line-height: 1.5;
+    pointer-events:none;
 }
 
 /*
@@ -192,7 +193,7 @@ a:focus {
 
 }
 
-.impress-enabled .step.active { opacity: 1 }
+.impress-enabled .step.active { opacity: 1; pointer-events:auto; }
 
 /*
     These 'slide' step styles were heavily inspired by HTML5 Slides:
@@ -730,4 +731,9 @@ a:focus {
   background: rgba(255,255,255,0.4);
   height: 100%;
   width: 22%;
+}
+
+button{
+  z-index:99999;
+  position:relative;
 }
