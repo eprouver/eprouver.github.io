@@ -1,0 +1,264 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <style type="text/css">
+    .poi circle {
+      cursor: pointer;
+      fill: steelblue;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+    }
+    .node text {
+      font-size: 11px;
+    }
+    path.sidelinks {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 10px;
+      stroke-linecap: round;
+    }
+    circle.showhelp{
+      fill: red;
+    }
+    circle.showadvanced{
+      fill: green;
+    }
+
+    line.mainpath{
+      stroke-width: 20px;
+      stroke: orange;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="text/javascript">
+    var names = ["Modeling with periodic functions",
+      "Constructing linear and exponential functions",
+      "Modeling with periodic functions 2",
+      "Addition and subtraction word problems within 100: Level 4",
+      "Addition and subtraction word problems within 100: Level 1",
+      "Comparing linear functions applications",
+      "Addition and subtraction word problems within 100: Level 3",
+      "Making line plots, bar graphs, and picture graphs",
+      "Interpreting scale drawings",
+      "Constructing 2D figures",
+      "Adding and subtracting negative numbers word problems",
+      "Circles and Pythagorean identities",
+      "Solving for unknown angles",
+      "Understanding addition and subtraction on the number line",
+      "Constructing proportions to solve application problems",
+      "Area, volume, and surface area",
+      "Rules for multiplying and dividing negative numbers",
+      "Interpreting linear expressions",
+      "Addition and subtraction word problems within 100: Level 2",
+      "Linear equation word problems",
+      "Operations with rational numbers",
+      "Simple probability",
+      "Understanding addition and subtraction with negative numbers",
+      "Variation in samples",
+      "Manipulating linear expressions with rational coefficients",
+      "Comparing populations",
+      "Multi-step rational number word problems",
+      "Probability models",
+      "Finding probability",
+      "Constructing and comparing proportional relationships",
+      "Qualitatively defining rigid transformations",
+      "Performing transformations on the coordinate plane",
+      "Transforming polygons",
+      "Symmetry of two-dimensional shapes",
+      "Quantitatively defining rigid transformations",
+      "Dilations",
+      "Performing transformations on the coordinate plane",
+      "Trigonometric functions and side ratios in right triangles",
+      "Exploring rigid transformations and congruence",
+      "Non-right triangle proofs"
+    ];
+
+    function addChild(depth) {
+      depth -= 1;
+      var name = names[~~(Math.random() * names.length)];
+      var children = [];
+
+      for (var i = 0; i < depth; i++) {
+        if (Math.random() > 0.5) {
+          children.push(addChild(depth));
+        }
+      }
+
+      var me = {};
+      me.name = name;
+      if (children.length > 0) {
+        me.children = children;
+      }
+      return me;
+    }
+
+    var m = [0, 0, 0, 0],
+      width = 1000,
+      height = 2000,
+      i = 0;
+
+    var diagonal = d3.svg.diagonal().projection(function(d) {
+      return [d.y, d.x];
+    });
+    var treecenter = 400;
+
+    var svg = d3.select("body").append("svg:svg")
+      .attr("width", width)
+      .attr("height", height)
+
+      svg.append('line')
+      .attr('class', 'mainpath')
+      .attr('x1', treecenter + 50)
+      .attr('y1', 0)
+      .attr('x2', treecenter + 50)
+      .attr('y2', height)
+
+      svg = svg.append('g')
+      .attr('transform', 'translate(0, 100)');
+
+      function toggleChildren(d, force){
+        if(d.display === 'block' || force === true){
+          d.display = 'none';
+          if(d.children){
+            d.children.forEach(function(v){
+              toggleChildren(v, true)
+            });
+          }
+        }else if(d.display === 'none' || force === false){
+          d.display = 'block';
+        }
+        d3.selectAll('.poi')
+        .style('display', function(d){ return d.display});
+      }
+
+      var tree = d3.layout.tree().size([300, 600]);
+      var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
+
+      function addTree(origin, root, dir){
+        if(!dir){
+          dir = 1;
+        }
+
+        var vis = svg.append('g')
+        .attr('transform', 'translate('+ (origin.y+ treecenter) +','+origin.x+')')
+
+        root.tree = vis;
+
+        var nodes = tree.nodes(root).reverse();
+        nodes.forEach(function(d){
+          d.display = 'none';
+          if(d.depth === 0){
+            d.x = 150;
+            d.y = 0;
+          }else{
+            d.y = dir * d.depth * 80 + (-10 * d.parent.children.indexOf(d))
+          }
+        });
+
+        var nodeEnter = vis.selectAll('g.poi').data(nodes).enter()
+        var poi = nodeEnter.append('g')
+        .attr('class', 'poi')
+        .style('display', 'none')
+        .attr('transform', function(d){
+          return 'translate('+d.y+','+d.x+')'; })
+          .on('click', function(d){
+            if(d.children)
+            d.children.forEach(toggleChildren);
+          });
+
+        poi.append('circle')
+        .attr('r', 15)
+
+        poi.append('svg:text')
+        .text(function(d){
+          return d.depth;
+        }).attr('fill', 'black')
+
+        var links = vis.selectAll('path.sidelinks').data(tree.links(nodes)).enter().insert('svg:path', 'g')
+        .attr('class', 'sidelinks')
+        .attr('d', function(d){
+          return diagonal({source: d.source, target: d.target});
+        });
+      }
+
+      var mainPath = d3.layout.tree().size([1800, 50]);
+
+      //Fake Main Pois
+      var pois = {
+        children: Array.apply(null, {length: 6}).map(function(v, i){ return {}})
+      };
+
+      var nodes = mainPath.nodes(pois).reverse();
+
+      nodes.forEach(function(d, i){
+        if(!d.depth){
+          nodes.splice(i, 1);
+        }
+      })
+
+      var yoff = (1800 / pois.children.length)* 0.5;
+
+      //Fake Branches
+      for(var i = 0; i < pois.children.length; i++){
+        var root = addChild(4);
+        pois.children[i].help = root;
+        var root = addChild(4);
+        pois.children[i].advanced = root;
+      }
+
+      pois.children.forEach(function(v, i){
+        addTree({
+          x: v.x - yoff,
+          y: v.y
+        }, v.help, -1);
+        addTree({
+          x: v.x - yoff,
+          y: v.y
+        }, v.advanced, 1);
+      });
+
+      var nodeEnter = svg.append('g')
+      .attr('transform', 'translate('+treecenter+', 0)')
+      .selectAll('g.mainPath').data(nodes).enter()
+      var poi = nodeEnter.append('g')
+      .attr('transform', function(d){
+        return 'translate('+d.y+','+d.x+')'; })
+
+
+        poi.append('circle')
+        .attr('class', 'showhelp')
+        .attr('cx', -15)
+        .attr('r', 15)
+        .on('click', function(d){
+          if(d.help.children)
+          d.help.children.forEach(toggleChildren);
+        });
+
+        poi.append('circle')
+        .attr('class', 'showadvanced')
+        .attr('cx', 15)
+        .attr('r', 15)
+        .on('click', function(d){
+          if(d.advanced.children)
+          d.advanced.children.forEach(toggleChildren);
+        });
+
+      poi.append('circle')
+      .attr('class', 'mainpoi')
+      .attr('r', 18)
+      .on('click', function(d){
+        if(d.help.children)
+        d.help.children.forEach(function(d){ toggleChildren(d, true)});
+        if(d.advanced.children)
+        d.advanced.children.forEach(function(d){ toggleChildren(d, true)});
+      });
+
+  </script>
+</body>
+
+</html>
