@@ -720,3 +720,11 @@ a:focus {
 .bmain #mpast{
   display:none;
 }
+
+#mountain{
+  position: absolute;
+  right: 0;
+  background: rgba(255,255,255,0.4);
+  height: 100%;
+  width: 19%;
+}
