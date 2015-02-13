@@ -179,7 +179,6 @@
               toggleChildren(v, force)
             });
           }
-
         }else{
           if (!d.cdis) {
             d.display = 'none';
@@ -371,39 +370,42 @@
               toggleChildren(d, true)
             });
         });
-
     }
 
 
 
 
-
-
+    _(activity).sortBy(function(v){ return v.startdate });
     drawMap(pois, activity);
 
     (function playActivity() {
+      var events = [];
+
       _(activity).each(function(v, i) {
+          //events.push(function(){
+          setTimeout(function(){
+            var poi = d3.select('#poi_' + v.id);
+            poi.select('circle.poicircle').attr('class', 'activity');
+            var d = poi.data()[0];
 
-        setTimeout(function() {
-          var poi = d3.select('#poi_' + v.id);
-          poi.select('circle.poicircle').attr('class', 'activity');
-          var d = poi.data()[0];
+            while (d.parent) {
+              d.display = 'block';
+              if(d.childlinks)
+              d3.selectAll(d.childlinks).attr('class', 'sidelinks active');
+              d = d.parent;
+            }
 
-          while (d.parent) {
-            d.display = 'block';
-            if(d.childlinks)
-            d3.selectAll(d.childlinks).attr('class', 'sidelinks active');
-            d = d.parent;
-          }
+            d3.selectAll('.poi')
+              .style('display', function(d) {
+                return d.display
+              });
+          }, i * 500);
 
-          d3.selectAll('.poi')
-            .style('display', function(d) {
-              return d.display
-            });
-        }, 500 * i);
+          //});
+      });
 
 
-      })
+
     })();
   </script>
 </body>
