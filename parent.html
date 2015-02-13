@@ -96,10 +96,22 @@
       }
       return me;
     }
+	
+	      //Fake Main Pois
+      var pois = {
+        children: Array.apply(null, {length: 6}).map(function(v, i){ return {}})
+      };
+      //Fake Branches
+      for(var i = 0; i < pois.children.length; i++){
+        var root = addChild(4);
+        pois.children[i].help = root;
+        var root = addChild(4);
+        pois.children[i].advanced = root;
+      }
 
     var m = [0, 0, 0, 0],
       width = 1000,
-      height = 2000,
+      height = 250* pois.children.length,
       i = 0;
 
     var diagonal = d3.svg.diagonal().projection(function(d) {
@@ -109,7 +121,7 @@
 
     var svg = d3.select("body").append("svg:svg")
       .attr("width", width)
-      .attr("height", height)
+      .attr("height", height + 100)
 
       svg.append('line')
       .attr('class', 'mainpath')
@@ -136,7 +148,7 @@
         .style('display', function(d){ return d.display});
       }
 
-      var tree = d3.layout.tree().size([300, 600]);
+      var tree = d3.layout.tree().size([220, 600]);
       var diagonal = d3.svg.diagonal().projection(function(d) { return [d.y, d.x]; });
 
       function addTree(origin, root, dir){
@@ -153,7 +165,7 @@
         nodes.forEach(function(d){
           d.display = 'none';
           if(d.depth === 0){
-            d.x = 150;
+            d.x = 110;
             d.y = 0;
           }else{
             d.y = dir * d.depth * 80 + (-10 * d.parent.children.indexOf(d))
@@ -186,13 +198,7 @@
         });
       }
 
-      var mainPath = d3.layout.tree().size([1800, 50]);
-
-      //Fake Main Pois
-      var pois = {
-        children: Array.apply(null, {length: 6}).map(function(v, i){ return {}})
-      };
-
+      var mainPath = d3.layout.tree().size([height, 50]);
       var nodes = mainPath.nodes(pois).reverse();
 
       nodes.forEach(function(d, i){
@@ -201,15 +207,7 @@
         }
       })
 
-      var yoff = (1800 / pois.children.length)* 0.5;
-
-      //Fake Branches
-      for(var i = 0; i < pois.children.length; i++){
-        var root = addChild(4);
-        pois.children[i].help = root;
-        var root = addChild(4);
-        pois.children[i].advanced = root;
-      }
+      var yoff = ((height / pois.children.length)* 0.5) - 15;
 
       pois.children.forEach(function(v, i){
         addTree({
