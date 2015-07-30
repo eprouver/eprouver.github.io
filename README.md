@@ -1,3 +1,0 @@
-# hermit
-
-[Describe the project.]
