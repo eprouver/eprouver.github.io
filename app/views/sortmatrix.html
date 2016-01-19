@@ -1,0 +1,34 @@
+<div>
+  <div class="row">
+    <div class="col-xs-6">
+      <div ng-repeat="dropper in smCtrl.format">
+        <div ng-switch on="dropper.type">
+          <div minmaxdrop ng-switch-when="range">
+            <div class="panel panel-info">
+              <div class="panel-heading" data-target="#dropper_{{$index}}" data-toggle="collapse">
+                {{dropper.name}}
+                <span class="label label-primary pull-right">
+                  {{dropper.dropped.length}}
+                </span>
+              </div>
+              <div class="panel-body collapse in" id="dropper_{{$index}}">
+                <ul>
+                  <li ng-repeat="dropped in dropper.dropped">
+                    {{dropped.description}}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div ng-repeat="datum in smCtrl.data">
+        <div class="btn btn-primary pull-left" data-content="{{datum.description}}" data-placement="top" data-toggle="popover" draggable>
+          ??
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
