@@ -1,0 +1,58 @@
+#bees{
+  .board-holder{
+    position:relative;
+    border: 1px solid green;
+  }
+
+  .board{
+      border: 1px solid red;
+      position:absolute;
+      top: 0;
+      left: 0;
+
+      &.no-touch{
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .flower{
+        position: absolute;
+        background: pink;
+      }
+
+      .hive{
+        position:absolute;
+        &.selectedHive{
+          background-color: yellow !important;
+        }
+      }
+
+      .bee{
+        position: absolute;
+        border-radius: 20px;
+
+        &.selectedBee{
+          background-color: yellow !important;
+        }
+
+        &.drone{
+          border: 2px solid blue;
+        }
+      }
+
+      #drone-view{
+        .hive{
+          pointer-events: none;
+        }
+      }
+  }
+}
+
+
+// Change these
+.options{
+  position: absolute;
+    width: 8vw;
+    top: -1em;
+    left: -0.7em;
+}
