@@ -15,7 +15,7 @@
     precision: 1,
     pollenRate: 0.1,
     speeds: {
-      drone: 1,
+      drone: 1.1,
       soldier: 0.25
     },
     cost: {
@@ -30,7 +30,7 @@
       soldier: 50
     },
     damage: {
-      drone: 0.02,
+      drone: 0.1,
       hive: 0.1,
       soldier: 0.1,
       injury: 0.01
@@ -43,15 +43,19 @@
       width: 40
     },
     hive: {
-      height: 50,
-      width: 50
+      height: 70,
+      width: 70
     },
     flower: {
       height: 40,
-      width: 40
+      width: 40,
+      regrow: 0.005
     },
     intrudercheck: 100,
-    startPollen: 1000
+    startPollen: {
+      hive: 100,
+      flower: 500
+    }
   };
 
   var territories;
@@ -87,7 +91,8 @@
         y: d3.round(random() * config.height, config.precision),
         h: config.flower.height,
         w: config.flower.width,
-        type: type
+        type: type,
+        pollen: config.startPollen.flower
       });
     }
 
@@ -135,7 +140,7 @@
         intruders: []
       };
 
-      var hive = self.createHive(teamIndex, d3.round(random() * config.width, config.precision), d3.round(random() * config.height, config.precision), config.startPollen);
+      var hive = self.createHive(teamIndex, d3.round(random() * config.width, config.precision), d3.round(random() * config.height, config.precision), config.startPollen.hive);
       self.createBee(teamIndex, hive, 'drone', hive.x, hive.y);
       self.teams.push(team);
     };
@@ -165,9 +170,13 @@
                 if (b.pollen > 0) {
                   h.pollen += config.pollenRate;
                   b.pollen -= config.pollenRate;
-                } else if (b.pollen <= 0 && b.target) {
-                  b.dx = b.target.x;
-                  b.dy = b.target.y;
+                } else if (b.pollen <= 0) {
+                  if(b.target){
+                    if(b.target.pollen > 10){
+                      b.dx = b.target.x;
+                      b.dy = b.target.y;
+                    }
+                  }
                 }
               }
             })
@@ -175,9 +184,12 @@
             //if colliding with a flower add pollen
             self.flowers.forEach(function(f) {
               if (compare(b, f)) {
-                if (b.pollen < config.maxpollen) {
+                if(f.pollen == 0) return;
+
+                if (b.pollen < config.maxpollen && f.pollen > 0) {
                   b.pollen += config.pollenRate;
-                } else {
+                  f.pollen -= config.pollenRate;
+                } else{
                   b.target = f;
                   b.dx = b.home.x;
                   b.dy = b.home.y;
@@ -254,6 +266,13 @@
             }
           })
 
+      });
+
+      self.flowers.forEach(function(f){
+
+        if(f.pollen <= config.startPollen.flower){
+          f.pollen += config.flower.regrow;
+        }
       });
 
       _(self.bees)

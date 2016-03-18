@@ -52,6 +52,16 @@
         .hive{
           pointer-events: none;
         }
+
+        .flower{
+          border: 5px solid yellow;
+        }
+      }
+
+      #soldier-view{
+        .hive{
+          border: 5px solid yellow;
+        }
       }
   }
 }

@@ -10,7 +10,9 @@
           <div class="flower"
             ng-repeat="f in bees.flowers"
             ng-class="b.type"
-            ng-style="{left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}"></div>
+            ng-style="{left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}">
+            <p>{{f.pollen | number: 0}}</p>
+          </div>
 
           <div class="hive"
             ng-repeat="h in bees.hives"
