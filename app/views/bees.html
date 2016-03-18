@@ -4,6 +4,8 @@
     <div class="col-xs-8">
       <div class="board-holder"
         ng-style="bees.boardSize()">
+
+        <svg id="territory" class="board" ng-style="bees.boardSize()"></svg>
         <div class="board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee}" ng-click="bees.boardClicked($event)">
           <div class="flower"
             ng-repeat="f in bees.flowers"
@@ -31,7 +33,6 @@
             ng-class="b.type + ' ' + (b == bees.selectedBee ? 'selectedBee': '')"
             ng-style="{left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2, background: bees.colors(b.team)}">
             <p>{{b.life | number: 0}}</p>
-            <p>{{b.pollen | number: 0}}</p>
           </div>
         </div>
 
@@ -42,11 +43,6 @@
               ng-click="bees.attack(h, bees.selectedBee, $event)"
               ng-style="{left: h.x, top: h.y, height: h.h, width: h.w, background: bees.colors(h.team), marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
 
-            <div class="bee"
-              ng-click="bees.attack(b, bees.selectedBee, $event)"
-              ng-repeat="b in bees.bees"
-              ng-class="b.type + ' ' + (b == bees.selectedBee ? 'selectedBee': '')"
-              ng-style="{left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2, background: bees.colors(b.team)}"></div>
           </div>
 
           <div id="drone-view" ng-if="bees.selectedBee.type == 'drone'">
@@ -59,7 +55,6 @@
             <div class="hive"
               ng-if="bees.selectedBee.home == h"
               ng-repeat="h in bees.hives | filter: {team: bees.selectedBee.team}"
-              ng-click="attackHive(h, bees.selectedBee, $event)"
               ng-style="{left: h.x, top: h.y, height: h.h, width: h.w, background: bees.colors(h.team), marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
 
             <div class="bee selectedBee"

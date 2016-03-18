@@ -4,6 +4,10 @@
     border: 1px solid green;
   }
 
+  svg.board{
+    opacity: 0.25;
+  }
+
   .board{
       border: 1px solid red;
       position:absolute;
@@ -37,6 +41,10 @@
 
         &.drone{
           border: 2px solid blue;
+        }
+
+        &.soldier{
+          border: 6px solid red;
         }
       }
 
