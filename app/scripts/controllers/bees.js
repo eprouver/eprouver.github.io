@@ -85,6 +85,13 @@
     self.hives = [];
     self.flowers = [];
 
+    self.reset = function(){
+      self.teams = [];
+      self.bees = [];
+      self.hives = [];
+      self.flowers = [];
+    }
+
     self.createFlower = function(type) {
       self.flowers.push({
         x: d3.round(random() * config.width, config.precision),
@@ -318,6 +325,8 @@
     function($scope, beesServ, $interval, startTerritory) {
       var self = this;
 
+      beesServ.reset();
+
       self.cost = config.cost;
 
       for (var i = 0; i < config.flowers; i++) {
@@ -337,8 +346,10 @@
 
       beesServ.createTeam('test1');
       beesServ.createTeam('test2');
+      beesServ.createTeam('test3');
 
-      var cancelUpdate = $interval(function(time) {
+      $interval.cancel(beesServ.cancelUpdate);
+      beesServ.cancelUpdate = $interval(function(time) {
         self.bees = self.bees.filter(checklife);
         self.hives = self.hives.filter(checklife);
         beesServ.update(time);
