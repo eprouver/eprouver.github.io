@@ -41,6 +41,9 @@ angular.module('frontsApp')
         .attr('fill', function(d, i) {
           return vertices[i].fill;
         })
+        .attr('stroke', function(d, i) {
+          return vertices[i].fill;
+        })
         .attr("d", polygon);
 
       path.order();

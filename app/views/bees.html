@@ -1,10 +1,9 @@
 <div id="bees">
   <h1>title</h1>
-  <div class="row">
-    <div class="col-xs-8">
-      <div class="board-holder"
-        ng-style="bees.boardSize()">
-
+  <div id="scroller">
+    <div ng-style="bees.boardSize(bees.scaler)">
+      <div style="transform: scale({{bees.scaler}}); transform-origin: 0 0">
+        <div class="board board-holder" ng-style="bees.boardSize()"></div>
         <svg id="territory" class="board" ng-style="bees.boardSize()"></svg>
         <div class="board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee}" ng-click="bees.boardClicked($event)">
           <div class="flower"
@@ -72,6 +71,4 @@
         </div>
       </div>
     </div>
-    <div class="col-xs-3"></div>
   </div>
-</div>

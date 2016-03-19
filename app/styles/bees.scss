@@ -1,15 +1,25 @@
 #bees{
+
+  #scroller{
+    width: 100%;
+    height: 70vh;
+    overflow:hidden;
+
+  }
   .board-holder{
     position:relative;
     border: 1px solid green;
+    //background: url(../images/grass.jpg);
   }
 
   svg.board{
-    opacity: 0.25;
+    path{
+      stroke-width: 5px;
+      fill-opacity: 0.25;
+    }
   }
 
   .board{
-      border: 1px solid red;
       position:absolute;
       top: 0;
       left: 0;
@@ -21,7 +31,8 @@
 
       .flower{
         position: absolute;
-        background: pink;
+        background: black;
+        color: white;
       }
 
       .hive{
