@@ -45,6 +45,11 @@
               ng-click="bees.attack(h, bees.selectedBee, $event)"
               ng-style="{left: h.x, top: h.y, height: h.h, width: h.w, background: bees.colors(h.team), marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
 
+              <!-- <div class="bee selectedBee"
+                ng-class="bees.selectedBee.type"
+                ng-click="bee.selectedBee.type = 'drone'; bees.unselect($event);"
+                ng-style="{left: bees.selectedBee.x, top: bees.selectedBee.y, height: bees.selectedBee.h, width: bees.selectedBee.w, marginTop: -bees.selectedBee.h/2, marginLeft: -bees.selectedBee.w/2}"></div> -->
+
           </div>
 
           <div id="drone-view" ng-if="bees.selectedBee.type == 'drone'">

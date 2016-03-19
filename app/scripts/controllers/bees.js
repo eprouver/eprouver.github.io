@@ -9,7 +9,7 @@
  */
 
 (function(module) {
-  var testingtime = 0.5;
+  var testingtime = 0.2;
 
   var config = {
     player: -1,
@@ -23,7 +23,7 @@
     },
     cost: {
       drone: 400,
-      soldier: 400
+      soldier: 100
     },
     maxpollen: 30,
     flowers: 10,
@@ -220,19 +220,16 @@
                 if (b.pollen < config.maxpollen && f.pollen > 0) {
 
                   //If this flower is not mine / claim it
-                  if (f.team !== b.team && b.team !== config.player) {
-                    b.dx = b.home.x;
-                    b.dy = b.home.y;
+                  if (f.team !== b.team && b.team !== config.player && self.teams[b.team].drones > 2) {
 
-                      if(self.teams[b.team].drones > 2){
-                        if (self.territories.findTerritory(b.x, b.y) !== b.team) {
-                          b.goal = 'buildHive';
-                          var loc = randomVector();
+                    if (self.territories.findTerritory(b.x, b.y) !== b.team) {
+                      b.goal = 'buildHive';
+                      var loc = randomVector();
 
-                          b.dx = f.x + (config.hive.width * 2 * loc[0]);
-                          b.dy = f.y + (config.hive.height * 2 * loc[1]);
-                        }
-                      }
+                      b.dx = f.x + (config.hive.width * 2 * loc[0]);
+                      b.dy = f.y + (config.hive.height * 2 * loc[1]);
+                    }
+
                   }
 
 
@@ -335,8 +332,21 @@
           return b.type == 'soldier';
         }).forEach(function(b) {
 
-          if (b.target == undefined) {
+          if(t.drones < 2){
+            b.type = 'drone';
+            b.target = undefined;
+            return;
+          }
 
+          // if (b.target) {
+          //   if (b.target.life) {
+          //     if (b.target.life <= 0) {
+          //       b.target = b.home;
+          //     }
+          //   }
+          // }
+
+          if (b.target == undefined) {
             b.target = t.intruders[0];
             if (b.target) {
               b.dx = b.target.x;
@@ -375,7 +385,11 @@
         });
       });
 
+
+      //drone things
       self.bees.filter(function(b) {
+        return b.type == 'drone';
+      }).filter(function(b) {
         if (b.target) {
           if (b.target.pollen <= config.maxpollen) b.target = undefined;
         }
@@ -384,7 +398,6 @@
       }).filter(function(b) {
         return b.team != config.player;
       }).filter(function(b) {
-
         if (b.target) {
           if (b.target.life) {
             if (b.target.life <= 0) {
@@ -393,26 +406,20 @@
           }
         }
 
-        switch (b.type) {
-          case 'drone':
-
-            if (ourtargets[b.team].length) {
-              b.target = ourtargets[b.team][~~(random() * ourtargets[b.team].length)];
-              if (b.target) {
-                b.dx = b.target.x;
-                b.dy = b.target.y;
-              }
-              return;
-            } else if (readytargets.length) {
-              b.target = readytargets[~~(random() * readytargets.length)];
-              if (b.target) {
-                b.dx = b.target.x;
-                b.dy = b.target.y;
-              }
-
-              return;
-            }
-            break;
+        if (ourtargets[b.team].length) {
+          b.target = ourtargets[b.team][~~(random() * ourtargets[b.team].length)];
+          if (b.target) {
+            b.dx = b.target.x;
+            b.dy = b.target.y;
+          }
+          return;
+        } else if (readytargets.length) {
+          b.target = readytargets[~~(random() * readytargets.length)];
+          if (b.target) {
+            b.dx = b.target.x;
+            b.dy = b.target.y;
+          }
+          return;
         }
 
       });
@@ -454,38 +461,11 @@
 
       _(self.bees)
         .forEach(function(b) {
-          var team = self.teams[b.team];
-
-          //Move the bee
-          if (Math.abs(b.x - b.dx) > config.precision && Math.abs(b.y - b.dy) > config.precision) {
-            var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
-            b.x = d3.round(b.x + (((b.dx - b.x) / length) * config.speeds[b.type]), config.precision);
-            b.y = d3.round(b.y + (((b.dy - b.y) / length) * config.speeds[b.type]), config.precision);
-            b.unmoved = 0;
-          } else {
-            if (b.goal == 'buildHive') {
-              if (self.territories.findTerritory(b.x, b.y) != b.team) {
-                self.createHive(b.team, b.x, b.y, b.pollen);
-                self.bees = _(self.bees).without(b);
-                return;
-              } else {
-                b.goal = undefined;
-                b.dx = b.home.x;
-                b.dy = b.home.y;
-                return;
-              }
-            }
-
-            // b.unmoved += 1;
-            //
-            // if(b.unmoved > 100){
-            //   b.target = undefined;
-            // }
-          }
 
           //find out which territory I'm in
           if ((time % config.intrudercheck) == 0) {
             var terr = self.territories.findTerritory(b.x, b.y);
+            var team = self.teams[terr];
 
             if (terr !== b.team) {
               if (team) {
@@ -502,6 +482,37 @@
 
             }
           }
+
+          //Move the bee
+          if (Math.abs(b.x - b.dx) > config.precision && Math.abs(b.y - b.dy) > config.precision) {
+            var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
+            b.x = d3.round(b.x + (((b.dx - b.x) / length) * config.speeds[b.type]), config.precision);
+            b.y = d3.round(b.y + (((b.dy - b.y) / length) * config.speeds[b.type]), config.precision);
+            //b.unmoved = 0;
+          } else {
+            if (b.goal == 'buildHive') {
+              if (self.territories.findTerritory(b.x, b.y) != b.team) {
+                self.createHive(b.team, b.x, b.y, b.pollen);
+                self.bees = _(self.bees).without(b);
+                return;
+              } else {
+                b.goal = undefined;
+                b.dx = b.home.x;
+                b.dy = b.home.y;
+                return;
+              }
+            }
+
+            //b.unmoved += 1;
+
+            // if(b.unmoved > 3000){
+            //   b.target = undefined;
+            //   b.dx = b.x + ((Math.random * 300) - 150);
+            //   b.dy = b.y + ((Math.random * 300) - 150);
+            // }
+          }
+
+
         });
 
       self.checkCollision(true);
