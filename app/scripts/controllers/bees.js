@@ -9,14 +9,14 @@
  */
 
 (function(module) {
-  var testingtime = 1;
+  var testingtime = 5;
 
   var config = {
+    player: 0,
     players: 6,
     scale: 0.15,
-    player: -1,
-    height: 2000,
-    width: 2000,
+    height: 10000,
+    width: 10000,
     flowers: 50,
     precision: 10,
     pollenRate: 0.5 * testingtime,
@@ -66,6 +66,8 @@
 
   var colors = d3.scale.category10().domain(d3.range(10));
   var random = Math.random;
+
+  //AABB testing
   var compare = function(a, b) {
     var ax = a.x - (a.w / 2),
       bx = b.x - (b.w / 2),
@@ -82,6 +84,7 @@
     return b.life > 0
   };
 
+  //Random unit vector
   function randomVector() {
     var x = Math.random() - 0.5;
     var y = Math.random() - 0.5;
@@ -89,6 +92,7 @@
     return [x / dist, y / dist]
   };
 
+  //distance between two points
   function distance(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
   }
@@ -121,7 +125,6 @@
 
     self.createBee = function(team, home, type, x, y, pollen) {
       var rando = randomVector();
-
       var bee = {
         x: x,
         y: y,
@@ -157,7 +160,6 @@
     };
     self.createTeam = function(name) {
       var teamIndex = self.teams.length;
-
       var team = {
         name: name,
         color: colors(teamIndex),
@@ -187,6 +189,7 @@
       self.hives.forEach(function(h1) {
         self.hives.forEach(function(h2) {
           if (h1 == h2) return;
+          //if the hive is dead, ignore it
           if (h1.life == 0 || h2.life == 0) return;
 
           if (compare(h1, h2)) {
@@ -198,6 +201,7 @@
               return;
             };
 
+            //If hives from two teams are touching, fight
             if (random() > 0.5) {
               h1.life -= config.damage.hive;
             }
@@ -222,10 +226,12 @@
                   b.home = h;
                 };
 
+                //if the bee has pollen deposit it
                 if (b.pollen > 0) {
                   h.pollen += config.pollenRate;
                   b.pollen -= config.pollenRate;
                 } else if (b.pollen <= 0) {
+                  //if the bee has no pollin go back to target
                   if (b.target) {
                     if (b.target.pollen > 10) {
                       b.dx = b.target.x;
@@ -244,11 +250,11 @@
                 b.goal = undefined;
                 if (f.pollen <= 0) return;
 
+                //If the flower has pollen stick around
                 if (b.pollen < config.maxpollen && f.pollen > 0) {
 
                   //If this flower is not mine / claim it
                   if (f.team !== b.team && b.team !== config.player && self.teams[b.team].drones > 2) {
-
                     if (self.territories.findTerritory(b.x, b.y) !== b.team) {
                       b.goal = 'takeLand';
                       var loc = randomVector();
@@ -256,7 +262,6 @@
                       b.dx = f.x + (config.hive.width * 2 * loc[0]);
                       b.dy = f.y + (config.hive.height * 2 * loc[1]);
                     }
-
                   }
 
                   b.pollen += config.pollenRate;
@@ -272,6 +277,7 @@
                     });
                   }
 
+                  //if you are far from home, build a new home
                   if (distance(b.x, b.y, b.home.x, b.home.y) > (config.width + config.height) * (0.5 * config.maxtravel)) {
                     b.goal = 'buildHive';
                     var x = b.home.x - b.x;
@@ -281,6 +287,8 @@
                     b.dy = b.y + (y / dist) * config.hive.height * 2;
                     return;
                   }
+
+                  //go home
                   b.dx = b.home.x;
                   b.dy = b.home.y;
                   return;
@@ -291,31 +299,39 @@
 
           case 'soldier':
             self.bees.filter(checklife).filter(function(ob) {
+              //only collide with other teams
               return ob.team !== b.team;
             }).forEach(function(ob) {
               if (compare(b, ob)) {
+                //If you've hit a soldier, make that your target
                 if (ob.type == 'soldier') {
                   b.target = ob;
                 }
 
+                //Fight
                 if (random() > 0.25) {
                   ob.life -= config.damage[ob.type];
                 }
 
+                //Injury
                 if (random() > 0.75) {
                   b.life -= config.damage.injury;
                 }
               }
             })
 
+            //If hives are hitting each other
             self.hives.filter(checklife).filter(function(ob) {
+              //and their on another team
               return ob.team !== b.team;
             }).forEach(function(ob) {
               if (compare(b, ob)) {
+                //Fight
                 if (random() > 0.5) {
                   ob.life -= config.damage.hive;
                 }
 
+                //Injury
                 if (random() > 0.75) {
                   b.life -= config.damage.injury;
                 }
@@ -327,10 +343,12 @@
     };
 
     self.updateFlowers = function() {
+      //Add flowers if some have been removed
       for (var i = self.flowers.length; i < config.flowers; i++) {
         self.createFlower('flower');
       };
 
+      //Update the location of each flower (which territory is it in?)
       self.flowers.forEach(function(f) {
         f.team = self.territories.findTerritory(f.x, f.y);
       });
@@ -348,10 +366,14 @@
     }
 
     self.update = function(delta) {
+      //Remove dead stuff
       self.bees = self.bees.filter(checklife);
       self.hives = self.hives.filter(checklife);
       self.flowers = self.flowers.filter(checklife);
 
+
+      //If the bees have changed update bees;
+      //same for hives
       var updatebees = false;
       var updatehives = false;
       if (self.bees.length != beeslength) {
@@ -363,6 +385,7 @@
         updatehives = true;
       }
 
+      //Periodically check for intruders
       var checkingIntruders = false;
       lastIntruderCheck = lastIntruderCheck + (delta || 1);
       if(lastIntruderCheck > config.intrudercheck){
@@ -375,6 +398,7 @@
         t.intruders = t.intruders.filter(checklife);
 
         if (updatebees) {
+          //how many soldiers and drones do we have?
           t.soldiers = self.bees.filter(function(b) {
             return b.team == t.team && b.type == 'soldier'
           }).length;
@@ -384,6 +408,7 @@
         }
 
         if (updatehives) {
+          //How many hives do we have?
           t.hives = self.hives.filter(function(b) {
             return b.team == t.team
           }).length;
@@ -496,6 +521,7 @@
 
         return b.target == undefined;
       }).filter(function(b) {
+        if(b.goal == 'user') return;
 
         if (ourtargets[b.team].length) {
           b.target = ourtargets[b.team].sort(function(one, two) {
@@ -682,13 +708,21 @@
       self.flowers = beesServ.flowers;
       beesServ.territories = startTerritory(config.width, config.height);
       $timeout(function() {
-        new IScroll('#scroller', {
+        var iscroll = new IScroll('#scroller', {
           scrollX: true,
           freeScroll: true,
           zoom: true,
           mouseWheel: true,
-          wheelAction: 'zoom'
+          wheelAction: 'zoom',
+          zoomMin: 0.2,
+          zoomMax: 10
         });
+
+        var hive = _(beesServ.hives).find({team: config.player});
+        if(hive){
+          iscroll.scrollTo(-(hive.x - config.hive.width * 10) * self.scaler, -(hive.y - config.hive.height * 10) * self.scaler, 2000)
+        }
+
       }, 100)
 
 
@@ -719,17 +753,21 @@
         }
       };
 
-      self.selectBee = function(bee, e) {
+      self.selectBee = function(b, e) {
+        if(b.team !== config.player) return;
         self.unselect(e);
-        bee.dx = bee.x;
-        bee.dy = bee.y;
-        self.selectedBee = bee;
+        b.target = undefined;
+        b.goal = 'user';
+        b.dx = b.x;
+        b.dy = b.y;
+        self.selectedBee = b;
         self.boardState = 'beeSelected';
         e.stopPropagation();
         e.preventDefault();
       };
 
       self.selectHive = function(h, e) {
+        if(h.team !== config.player) return;
         self.unselect(e);
         self.selectedHive = h;
         self.boardState = 'hiveSelected';
