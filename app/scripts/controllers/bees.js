@@ -9,16 +9,16 @@
  */
 
 (function(module) {
-  var testingtime = 5;
+  var testingtime = 2;
 
   var config = {
-    player: 0,
+    player: -1,
     players: 6,
     scale: 0.15,
     height: 10000,
     width: 10000,
     flowers: 50,
-    precision: 10,
+    precision: testingtime * 2,
     pollenRate: 0.5 * testingtime,
     speeds: {
       drone: 0.3 * testingtime,
@@ -664,8 +664,6 @@
 
             }
           }
-
-
         });
 
       self.checkCollision(true);
@@ -712,7 +710,7 @@
           zoom: true,
           mouseWheel: true,
           wheelAction: 'zoom',
-          zoomMin: 0.2,
+          zoomMin: 0.05 / config.scale,
           zoomMax: 10
         });
 
@@ -720,9 +718,7 @@
         if(hive){
           iscroll.scrollTo(-(hive.x - config.hive.width * 10) * self.scaler, -(hive.y - config.hive.height * 10) * self.scaler, 2000)
         }
-
       }, 100)
-
 
       var prevTime = 0;
 
