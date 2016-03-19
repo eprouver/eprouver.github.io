@@ -31,6 +31,7 @@
     minpollen: 30,
     maxpollen: 60,
     maxtravel: 0.2,
+    dronePercentage: 0.7,
     life: {
       drone: 10,
       hive: 100,
@@ -371,6 +372,12 @@
       self.hives = self.hives.filter(checklife);
       self.flowers = self.flowers.filter(checklife);
 
+      //update flower -> grow more pollen
+      self.flowers.forEach(function(f) {
+        if (f.pollen <= config.startPollen.flower) {
+          f.pollen += config.flower.regrow;
+        }
+      });
 
       //If the bees have changed update bees;
       //same for hives
@@ -421,10 +428,12 @@
           return b.type == 'soldier';
         }).forEach(function(b) {
 
+          //heal yourself a bit
           if (b.life < config.life.drone) {
             b.life += config.bee.repair;
           }
 
+          //If your target is dead, go back home
           if (b.target) {
             if (b.target.life <= 0) {
               b.target = undefined;
@@ -433,14 +442,17 @@
             }
           }
 
+          //If you don't have a target get one;
           if (b.target == undefined) {
             b.target = t.intruders[0];
+
+            //Found an intruder?
             if (b.target) {
               b.dx = b.target.x;
               b.dy = b.target.y;
               return;
             } else if (b.team != config.player && self.teams[b.team].soldiers > 3) {
-              //Find a weaker team to attack
+              //Find a weaker team to attack (or any team);
               var weak = self.teams.filter(function(t) {
                 return t.team != b.team;
               }).map(function(t) {
@@ -469,17 +481,21 @@
               if (b.team == config.player) {
                 return;
               }
+
+              //if you are attacking a hive, but an intruder is found, go after them
               if (t.intruders.length && t.team) {
                 b.target = undefined;
               }
             }
 
             if (t.intruders.indexOf(b.target) == -1) {
+              //My target left my territory
               b.dx = b.x;
               b.dy = b.y;
               b.target = undefined;
               return;
             } else if (b.target.life <= 0) {
+              //My target has died
               b.dx = b.x;
               b.dy = b.y;
               target = undefined;
@@ -507,10 +523,12 @@
       self.bees.filter(function(b) {
         return b.type == 'drone';
       }).filter(function(b) {
+        //heal yourself
         if (b.life < config.life.drone) {
           b.life += config.bee.repair;
         }
 
+        //If you have full pollen, or the flower is dead, move to next filter
         if (b.target) {
           if (b.target.pollen <= config.maxpollen) {
             b.target = undefined;
@@ -521,8 +539,11 @@
 
         return b.target == undefined;
       }).filter(function(b) {
+        //User interaction trumps ai
         if(b.goal == 'user') return;
 
+        //Find a pretty flower
+        //first in my territory, then anywhere else
         if (ourtargets[b.team].length) {
           b.target = ourtargets[b.team].sort(function(one, two) {
             return distance(b.x, b.y, one.x, one.y) - distance(b.x, b.y, two.x, two.y);
@@ -567,16 +588,9 @@
       }).forEach(function(h) {
         var team = self.teams[h.team];
 
-        // Turn hive into drone?
-        // if(team.drones == 0){
-        //   self.createBee(h.team, undefined, 'drone', h.x, h.y);
-        //   team.drones += 1;
-        //   h.life = 0;
-        //   self.hives = _(self.hives).without(h);
-        //   return;
-        // }
-
-        if (team.soldiers < (team.drones * 0.7) && team.drones > 2) {
+        //If there aren't enough soldiers, make one first
+        //else make a drone if you can offordone
+        if (team.soldiers < (team.drones * config.dronePercentage) && team.drones > 2) {
           if (h.pollen > config.cost.soldier) {
             self.createBee(h.team, h, 'soldier', h.x, h.y);
             h.pollen -= config.cost.soldier;
@@ -592,21 +606,15 @@
 
       }).value();
 
-      self.flowers.forEach(function(f) {
-        if (f.pollen <= config.startPollen.flower) {
-          f.pollen += config.flower.regrow;
-        }
-      });
-
       _(self.bees)
         .forEach(function(b) {
 
-          //find out which territory I'm in
-
+          //Check for intruders
           if (checkingIntruders) {
             var terr = self.territories.findTerritory(b.x, b.y);
             var team = self.teams[terr];
 
+            //bee is in the wrong territory
             if (terr !== b.team) {
               if (team) {
                 if (team.intruders.indexOf(b) == -1) {
@@ -615,11 +623,10 @@
               }
 
             } else {
-
+              //bee is not an intruder anymore
               self.teams.forEach(function(t) {
                 t.intruders = _(t.intruders).without(b);
               });
-
             }
           }
 
@@ -628,7 +635,6 @@
             var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
             b.x = d3.round(b.x + (((b.dx - b.x) / length) * config.speeds[b.type] * (delta || 1)), config.precision);
             b.y = d3.round(b.y + (((b.dy - b.y) / length) * config.speeds[b.type] * (delta || 1)), config.precision);
-            //b.unmoved = 0;
           } else {
             if (b.goal == 'takeLand') {
               self.createHive(b.team, b.x, b.y, b.pollen);
@@ -637,7 +643,7 @@
               return;
             } else if (b.goal == 'buildHive') {
               if (self.teams[b.team].drones > 3) {
-                //if this hive intersects any other hives
+                //if this bee intersects any other hives -> go home
                 if (_(self.hives.filter(function(h) {
                     return h.team == b.team;
                   })).any(function(h) {
@@ -657,14 +663,6 @@
               }
 
             }
-
-            //b.unmoved += 1;
-
-            // if(b.unmoved > 3000){
-            //   b.target = undefined;
-            //   b.dx = b.x + ((Math.random * 300) - 150);
-            //   b.dy = b.y + ((Math.random * 300) - 150);
-            // }
           }
 
 
