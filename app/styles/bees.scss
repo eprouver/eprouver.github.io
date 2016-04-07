@@ -1,87 +1,84 @@
-#bees{
-
-  #scroller{
+#bees {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1vmin;
+  #scroller {
     width: 100%;
     height: 70vh;
-    overflow:hidden;
-
+    overflow: visible;
   }
-  .board-holder{
-    position:relative;
+  .board-holder {
+    position: relative;
     border: 1px solid green;
+
     //background: url(../images/grass.jpg);
   }
-
-  svg.board{
-    path{
+  svg.board {
+    path {
       stroke-width: 5px;
       fill-opacity: 0.25;
     }
   }
+  .board {
+    position: absolute;
+    top: 0;
+    left: 0;
+    &.no-touch {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .flower {
+      position: absolute;
+      background: black;
+      color: white;
+    }
+    .hive {
+      transition: transform 0.5s ease;
+      position: absolute;
+      &.selectedHive {
+        background-color: yellow !important;
+      }
+    }
+    .bee {
+      transition: transform 0.5s ease;
+      position: absolute;
+      border-radius: 20px;
 
-  .board{
-      position:absolute;
-      top: 0;
-      left: 0;
-
-      &.no-touch{
-        opacity: 0.5;
+      //transition: top 0.1s linear, left 0.1s linear;
+      &.selectedBee {
+        background-color: yellow !important;
+      }
+      &.drone {
+        border: 2px solid blue;
+      }
+      &.soldier {
+        border: 6px solid red;
+      }
+    }
+    #drone-view {
+      .hive {
         pointer-events: none;
       }
-
-      .flower{
-        position: absolute;
-        background: black;
-        color: white;
+      .flower {
+        border: 5px solid yellow;
       }
-
-      .hive{
-        position:absolute;
-        &.selectedHive{
-          background-color: yellow !important;
-        }
+    }
+    #soldier-view {
+      .hive {
+        border: 5px solid yellow;
       }
-
-      .bee{
-        position: absolute;
-        border-radius: 20px;
-
-        &.selectedBee{
-          background-color: yellow !important;
-        }
-
-        &.drone{
-          border: 2px solid blue;
-        }
-
-        &.soldier{
-          border: 6px solid red;
-        }
-      }
-
-      #drone-view{
-        .hive{
-          pointer-events: none;
-        }
-
-        .flower{
-          border: 5px solid yellow;
-        }
-      }
-
-      #soldier-view{
-        .hive{
-          border: 5px solid yellow;
-        }
-      }
+    }
   }
 }
 
-
 // Change these
-.options{
+.options {
   position: absolute;
-    width: 8vw;
-    top: -1em;
-    left: -0.7em;
+  width: 8vw;
+  top: -1em;
+  left: -0.7em;
 }

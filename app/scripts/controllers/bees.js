@@ -9,16 +9,16 @@
  */
 
 (function(module) {
-  var testingtime = 2;
+  var testingtime = 0.6;
 
   var config = {
-    player: -1,
-    players: 6,
+    player: 0,
+    players: 2,
     scale: 0.15,
-    height: 10000,
-    width: 10000,
-    flowers: 50,
-    precision: testingtime * 2,
+    height: 1500,
+    width: 1500,
+    flowers: 5,
+    precision: 2,
     pollenRate: 0.5 * testingtime,
     speeds: {
       drone: 0.3 * testingtime,
@@ -704,15 +704,25 @@
       self.flowers = beesServ.flowers;
       beesServ.territories = startTerritory(config.width, config.height);
       $timeout(function() {
+        self.scaler = (1/config.width) * window.innerWidth * 0.85;
+
         var iscroll = new IScroll('#scroller', {
           scrollX: true,
           freeScroll: true,
           zoom: true,
           mouseWheel: true,
           wheelAction: 'zoom',
-          zoomMin: 0.05 / config.scale,
-          zoomMax: 10
+          zoomMin: 0.001,
+          zoomStart: 10,
+          zoomMax: 20
         });
+
+        self.zoomer = self.scaler;
+
+        iscroll.on('zoomEnd', function(){
+          self.zoomer = self.scaler * this.scale;
+          console.log(this.scale, self.zoomer)
+        })
 
         var hive = _(beesServ.hives).find({team: config.player});
         if(hive){
