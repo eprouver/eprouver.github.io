@@ -13,13 +13,12 @@
   }
   .board-holder {
     position: relative;
-    border: 1px solid green;
 
     //background: url(../images/grass.jpg);
   }
   svg.board {
     path {
-      stroke-width: 5px;
+      stroke-width: 1px;
       fill-opacity: 0.25;
     }
   }
@@ -37,6 +36,7 @@
       color: white;
     }
     .hive {
+      text-align:center;
       transition: transform 0.5s ease;
       position: absolute;
       &.selectedHive {

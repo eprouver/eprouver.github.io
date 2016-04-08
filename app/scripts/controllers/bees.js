@@ -9,49 +9,51 @@
  */
 
 (function(module) {
-  var testingtime = 0.6;
+  var testingtime = 4;
 
   var config = {
-    player: 0,
-    players: 2,
+    player: -1,
+    players: 6,
     scale: 0.15,
-    height: 1500,
-    width: 1500,
+    height: 2500,
+    width: 5000,
     flowers: 5,
-    precision: 2,
+    scarcity: 500,
+    precision: 5 * testingtime,
     pollenRate: 0.5 * testingtime,
     speeds: {
       drone: 0.3 * testingtime,
-      soldier: 0.3 * testingtime
+      soldier: 0.4 * testingtime
     },
     cost: {
       drone: 100,
-      soldier: 400
+      soldier: 800
     },
     minpollen: 30,
-    maxpollen: 60,
+    maxpollen: 150,
     maxtravel: 0.2,
-    dronePercentage: 0.7,
+    dronePercentage: 0.2,
     life: {
       drone: 10,
       hive: 100,
       soldier: 50
     },
     damage: {
-      drone: 0.1,
-      hive: 0.2,
-      soldier: 0.5,
-      injury: 0.03
+      drone: 0.05 * testingtime,
+      hive: 0.475 * testingtime,
+      soldier: 0.25 * testingtime,
+      injury: 0.1 * testingtime
     },
     bee: {
       height: 40,
       width: 40,
-      repair: 0.01
+      repair: 0.001 * testingtime
     },
     hive: {
       height: 70,
       width: 70,
-      repair: 0.06
+      repair: 0.06,
+      cost: 0.05 * testingtime
     },
     flower: {
       height: 40,
@@ -255,7 +257,7 @@
                 if (b.pollen < config.maxpollen && f.pollen > 0) {
 
                   //If this flower is not mine / claim it
-                  if (f.team !== b.team && b.team !== config.player && self.teams[b.team].drones > 2) {
+                  if (f.team !== b.team && b.team !== config.player && (self.teams[b.team].drones - 1) > self.teams[b.team].hives) {
                     if (self.territories.findTerritory(b.x, b.y) !== b.team) {
                       b.goal = 'takeLand';
                       var loc = randomVector();
@@ -272,10 +274,17 @@
                   if (b.target == undefined) {
                     b.target = f;
                   }
+
+                  b.home = self.hives.filter(function(h) {
+                    return h.team == b.team;
+                  }).sort(function(one, two) {
+                    return distance(one.x, one.y, b.x, b.y) - distance(two.x, two.y, b.x, b.y);
+                  })[0]
+
                   if (!b.home) {
-                    b.home = _(self.hives).find({
-                      team: b.team
-                    });
+                    b.goal = 'buildHive';
+                    b.home = b;
+                    return;
                   }
 
                   //if you are far from home, build a new home
@@ -379,6 +388,13 @@
         }
       });
 
+      var pollen = self.flowers.reduce(function(o, n) {
+        return o + n.pollen
+      }, 0);
+      if (pollen < self.teams.length * config.scarcity) {
+        self.createFlower('flower');
+      }
+
       //If the bees have changed update bees;
       //same for hives
       var updatebees = false;
@@ -395,7 +411,7 @@
       //Periodically check for intruders
       var checkingIntruders = false;
       lastIntruderCheck = lastIntruderCheck + (delta || 1);
-      if(lastIntruderCheck > config.intrudercheck){
+      if (lastIntruderCheck > config.intrudercheck) {
         checkingIntruders = true;
         lastIntruderCheck = 0;
       }
@@ -540,7 +556,7 @@
         return b.target == undefined;
       }).filter(function(b) {
         //User interaction trumps ai
-        if(b.goal == 'user') return;
+        if (b.goal == 'user') return;
 
         //Find a pretty flower
         //first in my territory, then anywhere else
@@ -555,7 +571,7 @@
           return;
         } else if (readytargets.length) {
           b.target = readytargets.sort(function(one, two) {
-            return distance(b.x, b.y, one.x, one.y) - distance(b.x, b.y, two.x, two.y);
+            return (distance(b.x, b.y, one.x, one.y) / (one.pollen / config.maxpollen)) - (distance(b.x, b.y, two.x, two.y) / (two.pollen / config.maxpollen));
           })[0]
           if (b.target) {
             b.dx = b.target.x;
@@ -583,6 +599,15 @@
         if (h.life < config.life.hive) {
           h.life += config.hive.repair;
         }
+
+        //if you have no pollen subtract life
+        //else subtract a little pollen
+        if (h.pollen <= 0) {
+          h.pollen = 0;
+          h.life -= (config.hive.repair + config.hive.cost);
+        } else {
+          h.pollen -= config.hive.cost;
+        }
       }).filter(function(h) {
         return h.team != config.player;
       }).forEach(function(h) {
@@ -590,7 +615,7 @@
 
         //If there aren't enough soldiers, make one first
         //else make a drone if you can offordone
-        if (team.soldiers < (team.drones * config.dronePercentage) && team.drones > 2) {
+        if (team.soldiers < (team.drones * config.dronePercentage) && team.drones > team.hives) {
           if (h.pollen > config.cost.soldier) {
             self.createBee(h.team, h, 'soldier', h.x, h.y);
             h.pollen -= config.cost.soldier;
@@ -704,7 +729,7 @@
       self.flowers = beesServ.flowers;
       beesServ.territories = startTerritory(config.width, config.height);
       $timeout(function() {
-        self.scaler = (1/config.width) * window.innerWidth * 0.85;
+        self.scaler = (1 / config.width) * window.innerWidth * 0.85;
 
         var iscroll = new IScroll('#scroller', {
           scrollX: true,
@@ -719,13 +744,15 @@
 
         self.zoomer = self.scaler;
 
-        iscroll.on('zoomEnd', function(){
+        iscroll.on('zoomEnd', function() {
           self.zoomer = self.scaler * this.scale;
           console.log(this.scale, self.zoomer)
         })
 
-        var hive = _(beesServ.hives).find({team: config.player});
-        if(hive){
+        var hive = _(beesServ.hives).find({
+          team: config.player
+        });
+        if (hive) {
           iscroll.scrollTo(-(hive.x - config.hive.width * 10) * self.scaler, -(hive.y - config.hive.height * 10) * self.scaler, 2000)
         }
       }, 100)
@@ -758,7 +785,7 @@
       };
 
       self.selectBee = function(b, e) {
-        if(b.team !== config.player) return;
+        if (b.team !== config.player) return;
         self.unselect(e);
         b.target = undefined;
         b.goal = 'user';
@@ -771,7 +798,7 @@
       };
 
       self.selectHive = function(h, e) {
-        if(h.team !== config.player) return;
+        if (h.team !== config.player) return;
         self.unselect(e);
         self.selectedHive = h;
         self.boardState = 'hiveSelected';
