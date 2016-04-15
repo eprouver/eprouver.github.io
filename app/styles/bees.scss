@@ -5,7 +5,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  padding: 1vmin;
+  padding: 10vmin;
+  background:black;
   #scroller {
     width: 100%;
     height: 70vh;
@@ -30,33 +31,52 @@
       opacity: 0.5;
       pointer-events: none;
     }
+    &.selecting-board {
+      .bee,
+      .hive {
+        pointer-events: none;
+      }
+      .mine {
+        pointer-events: auto !important;
+      }
+    }
     .flower {
       position: absolute;
       background: black;
       color: white;
     }
     .hive {
-      text-align:center;
+      text-align: center;
       transition: transform 0.5s ease;
       position: absolute;
       &.selectedHive {
         background-color: yellow !important;
+        z-index: 9;
       }
     }
     .bee {
       transition: transform 0.5s ease;
       position: absolute;
       border-radius: 20px;
+      div[circle-gauge]{
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        &.inner-gauge{
+          top: 5px;
+          left: 5px;
+        }
+      }
+
+
 
       //transition: top 0.1s linear, left 0.1s linear;
       &.selectedBee {
         background-color: yellow !important;
       }
-      &.drone {
-        border: 2px solid blue;
-      }
       &.soldier {
-        border: 6px solid red;
+        box-shadow: 0 0 0 4px red;
       }
     }
     #drone-view {

@@ -9,18 +9,17 @@
  */
 
 (function(module) {
-  var testingtime = 4;
+  var testingtime = 0.5;
 
   var config = {
     player: -1,
-    players: 6,
-    scale: 0.15,
-    height: 2500,
-    width: 5000,
-    flowers: 5,
-    scarcity: 500,
-    precision: 5 * testingtime,
-    pollenRate: 0.5 * testingtime,
+    players: 3,
+    height: 1000,
+    width: 1000,
+    flowers: 15,
+    scarcity: 1000,
+    precision: 1,
+    pollenRate: 0.08 * testingtime,
     speeds: {
       drone: 0.3 * testingtime,
       soldier: 0.4 * testingtime
@@ -40,7 +39,7 @@
     },
     damage: {
       drone: 0.05 * testingtime,
-      hive: 0.475 * testingtime,
+      hive: 0.275 * testingtime,
       soldier: 0.25 * testingtime,
       injury: 0.1 * testingtime
     },
@@ -52,13 +51,13 @@
     hive: {
       height: 70,
       width: 70,
-      repair: 0.06,
-      cost: 0.05 * testingtime
+      repair: 0.003,
+      cost: 0.0005 * testingtime
     },
     flower: {
       height: 40,
       width: 40,
-      regrow: 0.1 * testingtime
+      regrow: 0.01 * testingtime
     },
     intrudercheck: 10,
     startPollen: {
@@ -116,8 +115,8 @@
 
     self.createFlower = function(type) {
       self.flowers.push({
-        x: d3.round(random() * config.width, config.precision),
-        y: d3.round(random() * config.height, config.precision),
+        x: random() * config.width,
+        y: random() * config.height,
         h: config.flower.height,
         w: config.flower.width,
         type: type,
@@ -139,7 +138,9 @@
         type: type,
         home: home,
         life: config.life[type],
-        pollen: pollen || 0
+        maxLife: config.life[type],
+        pollen: pollen || 0,
+        maxPollen: config.maxpollen
       }
 
       self.bees.push(bee);
@@ -170,13 +171,12 @@
         intruders: []
       };
 
-      var hive = self.createHive(teamIndex, d3.round(random() * config.width, config.precision), d3.round(random() * config.height, config.precision), config.startPollen.hive);
+      var hive = self.createHive(teamIndex, random() * config.width, random() * config.height, config.startPollen.hive);
       self.createBee(teamIndex, hive, 'drone', hive.x, hive.y);
       self.teams.push(team);
     };
 
-    self.checkCollision = function() {
-
+    self.checkCollision = function(delta) {
       //if a hive is over a flower, kill the flower
       self.flowers = self.flowers.filter(function(f) {
         if (_(self.hives).any(function(h) {
@@ -193,7 +193,7 @@
         self.hives.forEach(function(h2) {
           if (h1 == h2) return;
           //if the hive is dead, ignore it
-          if (h1.life == 0 || h2.life == 0) return;
+          if (h1.life <= 0 || h2.life <= 0) return;
 
           if (compare(h1, h2)) {
             //if a hive collides with another hive return one hive to drone
@@ -206,10 +206,10 @@
 
             //If hives from two teams are touching, fight
             if (random() > 0.5) {
-              h1.life -= config.damage.hive;
+              h1.life -= config.damage.hive * delta;
             }
             if (random() > 0.5) {
-              h1.life -= config.damage.hive;
+              h1.life -= config.damage.hive * delta;
             }
           }
         });
@@ -230,9 +230,11 @@
                 };
 
                 //if the bee has pollen deposit it
-                if (b.pollen > 0) {
-                  h.pollen += config.pollenRate;
-                  b.pollen -= config.pollenRate;
+                if (b.pollen) {
+                  h.pollen += Math.min(config.pollenRate * delta, b.pollen);
+                  b.pollen -= config.pollenRate * delta;
+
+                  if(b.pollen < 0) b.pollen = 0;
                 } else if (b.pollen <= 0) {
                   //if the bee has no pollin go back to target
                   if (b.target) {
@@ -248,63 +250,71 @@
             })
 
             //if colliding with a flower add pollen
-            self.flowers.forEach(function(f) {
-              if (compare(b, f)) {
-                b.goal = undefined;
-                if (f.pollen <= 0) return;
+              self.flowers.forEach(function(f) {
+                if (compare(b, f)) {
+                  if(b.goal == 'user') return;
+                  b.goal = undefined;
+                  if (f.pollen <= 0) return;
 
-                //If the flower has pollen stick around
-                if (b.pollen < config.maxpollen && f.pollen > 0) {
+                  //If the flower has pollen stick around
+                  if (b.pollen < config.maxpollen && f.pollen > 0) {
 
-                  //If this flower is not mine / claim it
-                  if (f.team !== b.team && b.team !== config.player && (self.teams[b.team].drones - 1) > self.teams[b.team].hives) {
-                    if (self.territories.findTerritory(b.x, b.y) !== b.team) {
-                      b.goal = 'takeLand';
-                      var loc = randomVector();
+                    //If this flower is not mine / claim it
+                    if (b.team !== config.player) {
+                      if (f.team !== b.team && (self.teams[b.team].drones - 1) > self.teams[b.team].hives) {
+                        if (self.territories.findTerritory(b.x, b.y) !== b.team) {
+                          b.goal = 'takeLand';
+                          var loc = randomVector();
 
-                      b.dx = f.x + (config.hive.width * 2 * loc[0]);
-                      b.dy = f.y + (config.hive.height * 2 * loc[1]);
+                          b.dx = f.x + (config.hive.width * 2 * loc[0]);
+                          b.dy = f.y + (config.hive.height * 2 * loc[1]);
+                        }
+                      }
                     }
-                  }
 
-                  b.pollen += config.pollenRate;
-                  f.pollen -= config.pollenRate;
-                  return;
-                } else {
-                  if (b.target == undefined) {
-                    b.target = f;
-                  }
+                    b.pollen += Math.min(f.pollen, config.pollenRate * delta);
+                    f.pollen -= config.pollenRate * delta;
+                    if(f.pollen <= 0){
+                      f.pollen = 0;
+                    }
+                    return;
+                  } else {
+                    if (b.target == undefined) {
+                      b.target = f;
+                    }
 
-                  b.home = self.hives.filter(function(h) {
-                    return h.team == b.team;
-                  }).sort(function(one, two) {
-                    return distance(one.x, one.y, b.x, b.y) - distance(two.x, two.y, b.x, b.y);
-                  })[0]
+                    b.home = self.hives.filter(function(h) {
+                      return h.team == b.team;
+                    }).sort(function(one, two) {
+                      return distance(one.x, one.y, b.x, b.y) - distance(two.x, two.y, b.x, b.y);
+                    })[0]
 
-                  if (!b.home) {
-                    b.goal = 'buildHive';
-                    b.home = b;
+                    if (!b.home) {
+                      b.goal = 'buildHive';
+                      b.home = b;
+                      return;
+                    }
+
+                    //if you are far from home, build a new home
+                    if (b.team !== config.player) {
+                      if (distance(b.x, b.y, b.home.x, b.home.y) > (config.width + config.height) * (0.5 * config.maxtravel)) {
+                        b.goal = 'buildHive';
+                        var x = b.home.x - b.x;
+                        var y = b.home.y - b.y;
+                        var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+                        b.dx = b.x + (x / dist) * config.hive.width * 2;
+                        b.dy = b.y + (y / dist) * config.hive.height * 2;
+                        return;
+                      }
+                    }
+
+                    //go home
+                    b.dx = b.home.x;
+                    b.dy = b.home.y;
                     return;
                   }
-
-                  //if you are far from home, build a new home
-                  if (distance(b.x, b.y, b.home.x, b.home.y) > (config.width + config.height) * (0.5 * config.maxtravel)) {
-                    b.goal = 'buildHive';
-                    var x = b.home.x - b.x;
-                    var y = b.home.y - b.y;
-                    var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-                    b.dx = b.x + (x / dist) * config.hive.width * 2;
-                    b.dy = b.y + (y / dist) * config.hive.height * 2;
-                    return;
-                  }
-
-                  //go home
-                  b.dx = b.home.x;
-                  b.dy = b.home.y;
-                  return;
                 }
-              }
-            })
+              })
             break;
 
           case 'soldier':
@@ -320,12 +330,12 @@
 
                 //Fight
                 if (random() > 0.25) {
-                  ob.life -= config.damage[ob.type];
+                  ob.life -= config.damage[ob.type] * delta;
                 }
 
                 //Injury
                 if (random() > 0.75) {
-                  b.life -= config.damage.injury;
+                  b.life -= config.damage.injury * delta;
                 }
               }
             })
@@ -338,12 +348,12 @@
               if (compare(b, ob)) {
                 //Fight
                 if (random() > 0.5) {
-                  ob.life -= config.damage.hive;
+                  ob.life -= config.damage.hive * delta;
                 }
 
                 //Injury
                 if (random() > 0.75) {
-                  b.life -= config.damage.injury;
+                  b.life -= config.damage.injury * delta;
                 }
               }
             })
@@ -376,6 +386,10 @@
     }
 
     self.update = function(delta) {
+      if (!delta) {
+        delta = 1;
+      }
+
       //Remove dead stuff
       self.bees = self.bees.filter(checklife);
       self.hives = self.hives.filter(checklife);
@@ -384,7 +398,7 @@
       //update flower -> grow more pollen
       self.flowers.forEach(function(f) {
         if (f.pollen <= config.startPollen.flower) {
-          f.pollen += config.flower.regrow;
+          f.pollen += config.flower.regrow * delta;
         }
       });
 
@@ -446,7 +460,7 @@
 
           //heal yourself a bit
           if (b.life < config.life.drone) {
-            b.life += config.bee.repair;
+            b.life += config.bee.repair * delta;
           }
 
           //If your target is dead, go back home
@@ -541,7 +555,7 @@
       }).filter(function(b) {
         //heal yourself
         if (b.life < config.life.drone) {
-          b.life += config.bee.repair;
+          b.life += config.bee.repair * delta;
         }
 
         //If you have full pollen, or the flower is dead, move to next filter
@@ -597,16 +611,16 @@
       //update hives
       _.chain(self.hives).forEach(function(h) {
         if (h.life < config.life.hive) {
-          h.life += config.hive.repair;
+          h.life += config.hive.repair * delta;
         }
 
         //if you have no pollen subtract life
         //else subtract a little pollen
         if (h.pollen <= 0) {
           h.pollen = 0;
-          h.life -= (config.hive.repair + config.hive.cost);
+          h.life -= (config.hive.repair + config.hive.cost) * delta;
         } else {
-          h.pollen -= config.hive.cost;
+          h.pollen -= config.hive.cost * delta;
         }
       }).filter(function(h) {
         return h.team != config.player;
@@ -655,16 +669,31 @@
             }
           }
 
+          if(b.dx < 0) b.dx = 0;
+          if(b.dy < 0) b.dy = 0;
+          if(b.dx > config.width) b.dx = config.width;
+          if(b.dy > config.height) b.dy = config.height;
+
           //Move the bee
           if (Math.abs(b.x - b.dx) > config.precision || Math.abs(b.y - b.dy) > config.precision) {
             var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
-            b.x = d3.round(b.x + (((b.dx - b.x) / length) * config.speeds[b.type] * (delta || 1)), config.precision);
-            b.y = d3.round(b.y + (((b.dy - b.y) / length) * config.speeds[b.type] * (delta || 1)), config.precision);
+            var newX = b.x + (((b.dx - b.x) / length) * config.speeds[b.type] * (delta || 1));
+            var newY = b.y + (((b.dy - b.y) / length) * config.speeds[b.type] * (delta || 1));
+
+            //Clamp the travel to prevent overshoot
+            if (distance(b.x, b.y, b.dx, b.dy) > distance(newX, newY, b.dx, b.dy)) {
+              b.x = newX;
+              b.y = newY;
+            } else {
+              b.x = b.dx;
+              b.y = b.dy;
+            }
           } else {
             if (b.goal == 'takeLand') {
-              self.createHive(b.team, b.x, b.y, b.pollen);
+              self.createHive(b.team, b.x, b.y, b.pollen / 2);
               b.life = 0;
               self.bees = _(self.bees).without(b);
+              b.goal = undefined;
               return;
             } else if (b.goal == 'buildHive') {
               if (self.teams[b.team].drones > 3) {
@@ -678,7 +707,7 @@
                   return;
                 }
 
-                self.createHive(b.team, b.x, b.y, b.pollen);
+                self.createHive(b.team, b.x, b.y, b.pollen / 2);
                 b.life = 0;
                 self.bees = _(self.bees).without(b);
                 return;
@@ -691,7 +720,7 @@
           }
         });
 
-      self.checkCollision(true);
+      self.checkCollision(delta);
     };
 
   });
@@ -699,7 +728,7 @@
   module.controller('BeesCtrl', ['$scope', 'beesServ', '$interval', 'startTerritory', '$timeout',
     function($scope, beesServ, $interval, startTerritory, $timeout) {
       var self = this;
-      self.scaler = config.scale;
+      self.player = config.player;
       beesServ.reset();
 
       self.cost = config.cost;
@@ -729,7 +758,7 @@
       self.flowers = beesServ.flowers;
       beesServ.territories = startTerritory(config.width, config.height);
       $timeout(function() {
-        self.scaler = (1 / config.width) * window.innerWidth * 0.85;
+        self.scaler = 1; //(1 / config.width) * window.innerWidth * 0.85;
 
         var iscroll = new IScroll('#scroller', {
           scrollX: true,
@@ -738,7 +767,7 @@
           mouseWheel: true,
           wheelAction: 'zoom',
           zoomMin: 0.001,
-          zoomStart: 10,
+          zoomStart: 5,
           zoomMax: 20
         });
 
@@ -746,7 +775,6 @@
 
         iscroll.on('zoomEnd', function() {
           self.zoomer = self.scaler * this.scale;
-          console.log(this.scale, self.zoomer)
         })
 
         var hive = _(beesServ.hives).find({
@@ -761,7 +789,7 @@
 
       function update(time) {
         var delta = (time || 0) - prevTime;
-        beesServ.update(delta);
+        beesServ.update(delta / (Math.pow(self.zoomer, 1.2)));
         prevTime = time;
 
         if (!$scope.$$phase) {
@@ -812,6 +840,7 @@
             self.selectedBee.dx = e.offsetX;
             self.selectedBee.dy = e.offsetY;
             self.selectedBee.target = undefined;
+            self.selectedBee.goal = 'user';
             break;
         }
 
@@ -848,7 +877,7 @@
         self.selectedBee.life = 0;
 
         self.bees = _(beesServ.bees).without(self.selectedBee);
-        beesServ.createHive(self.selectedBee.team, self.selectedBee.x, self.selectedBee.y, self.selectedBee.pollen);
+        beesServ.createHive(self.selectedBee.team, self.selectedBee.x, self.selectedBee.y, self.selectedBee.pollen / 2);
 
         self.unselect(e);
         self.hives = beesServ.hives;
@@ -876,6 +905,7 @@
         me.dx = f.x;
         me.dy = f.y;
         me.target = f;
+        me.goal = undefined;
 
         e.stopPropagation();
         e.preventDefault();
