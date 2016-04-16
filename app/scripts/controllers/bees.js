@@ -11,9 +11,9 @@
 (function(module) {
 
   module.controller('BeesCtrl', ['$scope', 'beesServ', '$interval', 'startTerritory',
-  '$timeout', 'beesConfig', 'compare',
+    '$timeout', 'beesConfig', 'compare', 'updateFields',
     function($scope, beesServ, $interval, startTerritory,
-      $timeout, beesConfig, compare) {
+      $timeout, beesConfig, compare, updateFields) {
       var self = this;
       self.player = beesConfig.player;
       beesServ.reset();
@@ -74,14 +74,7 @@
 
       var prevTime = 0;
 
-      function updateFields(a, type){
-        var dest = _(self[type]).find({id: a.id});
 
-        if(dest == undefined){
-          self[type].push(a);
-        }
-        return _.extend(dest, a);
-      }
 
       function checklife(b) {
         return b.life >= 0;
@@ -90,25 +83,26 @@
       function update(time) {
         var delta = (time || 0) - prevTime;
         prevTime = time;
-        beesServ.update(delta / (Math.pow(self.zoomer, 1.2))).then(function(){
+        beesServ.update(delta / (Math.pow(self.zoomer, 1.2))).then(function() {
 
-               beesServ.flowers.map(function(v){
-                 return updateFields(v, 'flowers');
-               })
-               self.bees = self.bees.filter(checklife);
-               beesServ.bees.map(function(v){
-                 updateFields(v, 'bees');
-               })
-               self.flowers = self.flowers.filter(checklife);
-               beesServ.hives.map(function(v){
-                 updateFields(v, 'hives');
-               })
-               self.hives = self.hives.filter(checklife);
+          beesServ.flowers.map(function(v) {
+            return updateFields.apply(self, [v, 'flowers']);
+          })
+          self.bees = self.bees.filter(checklife);
+          beesServ.bees.map(function(v) {
+            updateFields.apply(self, [v, 'bees']);
+          })
+          self.flowers = self.flowers.filter(checklife);
+          beesServ.hives.map(function(v) {
+            updateFields.apply(self, [v, 'hives']);
+          })
+          self.hives = self.hives.filter(checklife);
 
           requestAnimFrame(update);
         });
       };
-      update();
+
+      $timeout(update)
 
       self.boardSize = function(n) {
         if (!n) n = 1;
@@ -143,10 +137,14 @@
       self.boardClicked = function(e) {
         switch (self.boardState) {
           case 'beeSelected':
-            self.selectedBee.dx = e.offsetX;
-            self.selectedBee.dy = e.offsetY;
-            self.selectedBee.target = undefined;
-            self.selectedBee.goal = 'user';
+
+            var mybee = _(beesServ.bees).find({
+              id: self.selectedBee.id
+            })
+            mybee.dx = e.offsetX;
+            mybee.dy = e.offsetY;
+            mybee.target = undefined;
+            mybee.goal = 'user';
             break;
         }
 
@@ -180,42 +178,53 @@
           return;
         }
 
-        self.selectedBee.life = 0;
-
-        self.bees = _(beesServ.bees).without(self.selectedBee);
-        beesServ.createHive(self.selectedBee.team, self.selectedBee.x, self.selectedBee.y, self.selectedBee.pollen / 2);
+        if (beesServ.createHive(self.selectedBee.team, self.selectedBee.x, self.selectedBee.y, self.selectedBee.pollen / 2)) {
+          self.selectedBee.life = -1;
+        }
 
         self.unselect(e);
-        self.hives = beesServ.hives;
       };
 
       self.spawn = function(type, h, e) {
         beesServ.createBee(h.team, h, type, h.x, h.y);
         h.pollen -= beesConfig.cost[type];
         self.unselect(e);
-        self.bees = beesServ.bees;
       };
 
       self.attack = function(t, me, e) {
-        me.dx = t.x;
-        me.dy = t.y;
-        me.target = t;
-
         e.stopPropagation();
         e.preventDefault();
         self.unselect(e);
+
+        me = _(beesServ.bees).find({
+          id: me.id
+        });
+        if (!me) {
+          debugger;
+        }
+
+        me.dx = t.x;
+        me.dy = t.y;
+        me.target = t;
       };
 
       self.polinate = function(f, me, e) {
         self.boardState = undefined;
+        e.stopPropagation();
+        e.preventDefault();
+        self.unselect(e);
+
+        var me2 = _(beesServ.bees).find({
+          id: me.id
+        });
+        if (!me2) {
+          debugger;
+        }
+
         me.dx = f.x;
         me.dy = f.y;
         me.target = f;
         me.goal = undefined;
-
-        e.stopPropagation();
-        e.preventDefault();
-        self.unselect(e);
       };
 
     }

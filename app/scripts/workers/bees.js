@@ -22,10 +22,30 @@ self.addEventListener('message', function(e) {
     return b.life > 0
   };
 
+  function compare(a, b) {
+    var ax = a.x - (a.w / 2),
+      bx = b.x - (b.w / 2),
+      ay = a.y - (a.h / 2),
+      by = b.y - (b.h / 2);
+
+    return (ax < bx + b.w &&
+      ax + a.w > bx &&
+      ay < by + b.h &&
+      a.h + ay > by)
+  }
+
   //distance between two points
   function distance(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
   }
+
+  //Random unit vector
+  function randomVector() {
+    var x = Math.random() - 0.5;
+    var y = Math.random() - 0.5;
+    var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    return [x / dist, y / dist]
+  };
 
   //update flower -> grow more pollen
   beesData.flowers.forEach(function(f) {
@@ -148,12 +168,6 @@ self.addEventListener('message', function(e) {
           b.dy = b.y;
           b.target = undefined;
           return;
-        } else if (b.target.life <= 0) {
-          //My target has died
-          b.dx = b.x;
-          b.dy = b.y;
-          target = undefined;
-          return;
         }
 
         b.dx = b.target.x;
@@ -245,6 +259,193 @@ self.addEventListener('message', function(e) {
       h.life -= (beesConfig.hive.repair + beesConfig.hive.cost) * delta;
     } else {
       h.pollen -= beesConfig.hive.cost * delta;
+    }
+  })
+
+
+
+
+
+
+
+
+
+  /*  Check Collision Starts Here  */
+
+  //if a hive is over a flower, kill the flower
+  beesData.flowers = beesData.flowers.filter(function(f) {
+    if (beesData.hives.filter(function(h) {
+        return compare(f, h)
+      }).length > 0) {
+      f.life = -1;
+      return false;
+    }
+
+    return true;
+  });
+
+  beesData.hives.forEach(function(h1) {
+    beesData.hives.forEach(function(h2) {
+      if (h1 == h2) return;
+      //if the hive is dead, ignore it
+      if (h1.life <= 0 || h2.life <= 0) return;
+
+      if (compare(h1, h2)) {
+
+        //If hives from two teams are touching, fight
+        if (Math.random() > 0.5) {
+          h1.life -= beesConfig.damage.hive * delta;
+        }
+        if (Math.random() > 0.5) {
+          h1.life -= beesConfig.damage.hive * delta;
+        }
+      }
+    });
+  });
+
+  //drone collisions
+  beesData.bees.filter(checklife).forEach(function(b) {
+    switch (b.type) {
+      case 'drone':
+        //see if colliding with my hives
+        beesData.hives.filter(checklife).filter(function(h) {
+          return b.team == h.team;
+        }).forEach(function(h) {
+          //if drone hits home update home
+          if (compare(b, h)) {
+            if (h != b.home) {
+              b.home = h;
+            };
+
+            //if the bee has pollen deposit it
+            if (b.pollen) {
+              h.pollen += Math.min(beesConfig.pollenRate * delta, b.pollen);
+              b.pollen -= beesConfig.pollenRate * delta;
+
+              if (b.pollen < 0) b.pollen = 0;
+            } else if (b.pollen <= 0) {
+              //if the bee has no pollin go back to target
+              if (b.target) {
+                if (b.target.pollen > 10) {
+                  b.dx = b.target.x;
+                  b.dy = b.target.y;
+                } else {
+                  b.target = undefined;
+                }
+              }
+            }
+          }
+        });
+
+        //if colliding with a flower add pollen
+        beesData.flowers.forEach(function(f) {
+          if (compare(b, f)) {
+            if (b.goal == 'user') return;
+            b.goal = undefined;
+            if (f.pollen <= 0){
+              return;
+            }
+
+            //If the flower has pollen stick around
+            if (b.pollen < beesConfig.maxpollen && f.pollen > 0) {
+
+              //If this flower is not mine / claim it
+              if (b.team !== beesConfig.player) {
+                if (f.team !== b.team && (beesData.teams[b.team].drones - 1) > beesData.teams[b.team].hives) {
+                  b.goal = 'takeLand';
+                  var loc = randomVector();
+
+                  b.dx = f.x + (beesConfig.hive.width * 2 * loc[0]);
+                  b.dy = f.y + (beesConfig.hive.height * 2 * loc[1]);
+                }
+              }
+
+              b.pollen += Math.min(f.pollen, beesConfig.pollenRate * delta);
+              f.pollen -= beesConfig.pollenRate * delta;
+              if (f.pollen <= 0) {
+                f.pollen = 0;
+              }
+              return;
+            }else{
+              if (b.target == undefined) {
+                b.target = f;
+              }
+
+              b.home = beesData.hives.filter(function(h) {
+                return h.team == b.team;
+              }).sort(function(one, two) {
+                return distance(one.x, one.y, b.x, b.y) - distance(two.x, two.y, b.x, b.y);
+              })[0]
+
+              if (!b.home) {
+                b.goal = 'buildHive';
+                b.home = b;
+                return;
+              }
+
+              //if you are far from home, build a new home
+              if (b.team !== beesConfig.player) {
+                if (distance(b.x, b.y, b.home.x, b.home.y) > (beesConfig.width + beesConfig.height) * (0.5 * beesConfig.maxtravel)) {
+                  b.goal = 'buildHive';
+                  var x = b.home.x - b.x;
+                  var y = b.home.y - b.y;
+                  var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+                  b.dx = b.x + (x / dist) * beesConfig.hive.width * 2;
+                  b.dy = b.y + (y / dist) * beesConfig.hive.height * 2;
+                  return;
+                }
+              }
+
+              //go home
+              b.dx = b.home.x;
+              b.dy = b.home.y;
+              return;
+            }
+          }
+        })
+        break;
+
+      case 'soldier':
+        beesData.bees.filter(checklife).filter(function(ob) {
+          //only collide with other teams
+          return ob.team !== b.team;
+        }).forEach(function(ob) {
+          if (compare(b, ob)) {
+            //If you've hit a soldier, make that your target
+            if (ob.type == 'soldier') {
+              b.target = ob;
+            }
+
+            //Fight
+            if (Math.random() > 0.25) {
+              ob.life -= beesConfig.damage[ob.type] * delta;
+            }
+
+            //Injury
+            if (Math.random() > 0.75) {
+              b.life -= beesConfig.damage.injury * delta;
+            }
+          }
+        })
+
+        //If hives are hitting each other
+        beesData.hives.filter(checklife).filter(function(ob) {
+          //and their on another team
+          return ob.team !== b.team;
+        }).forEach(function(ob) {
+          if (compare(b, ob)) {
+            //Fight
+            if (Math.random() > 0.5) {
+              ob.life -= beesConfig.damage.hive * delta;
+            }
+
+            //Injury
+            if (Math.random() > 0.75) {
+              b.life -= beesConfig.damage.injury * delta;
+            }
+          }
+        })
+        break;
     }
   })
 
