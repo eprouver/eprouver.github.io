@@ -17,17 +17,18 @@
             <p>{{f.pollen | number: 0}}</p>
           </div>
 
+          <!-- | filter:{team: bees.player} -->
           <div class="hive" ng-repeat="h in bees.hives" ng-class="{selectedHive: h == bees.selectedHive, mine: h.team == bees.player}" ng-click="bees.selectHive(h, $event)" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2, background: bees.colors(h.team)}">
             <div class="options btn-group" ng-if="h == bees.selectedHive">
               <button ng-disabled="h.pollen < bees.cost.soldier" class="btn btn-danger" ng-click="bees.spawn('soldier', h, $event)">S</button>
               <button ng-disabled="h.pollen < bees.cost.drone" class="btn btn-info" ng-click="bees.spawn('drone', h, $event)">D</button>
             </div>
             <p>{{h.life | number: 0}}</p>
-            <p>{{h.pollen | number: 0}}</p>
+            <p ng-if="::h.team == bees.player">{{h.pollen | number: 0}}</p>
           </div>
 
           <div class="bee" ng-click="bees.selectBee(b, $event)" ng-repeat="b in bees.bees" ng-class="{mine: b.team == bees.player, selectedBee: b == bees.selectedBee, soldier: b.type == 'soldier', drone: b.type == 'drone'}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2, background: bees.colors(b.team)}">
-            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone'" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 5}}" , thickness="5"></div>
+            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone' && b.team == bees.player" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 5}}" , thickness="5"></div>
             <div circle-gauge min="0" max="{{b.maxLife}}" value="b.life" back="#aaa" display="{{bees.colors(b.team)}}" radius="{{b.w / 2}}" , thickness="5"></div>
 
           </div>
