@@ -33,7 +33,7 @@
   module.service('beesConfig', function() {
     return {
       player: -1,
-      players: 2,
+      players: 3,
       height: 1000,
       width: 1000,
       flowers: 15,
@@ -320,8 +320,6 @@
 
                 return i.life > 0 && self.territories.findTerritory(i.x, i.y) == t.team;
               });
-
-              console.log(t.intruders.length, filtered.length)
 
               t.intruders = filtered;
             }
