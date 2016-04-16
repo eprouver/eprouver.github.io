@@ -14,7 +14,7 @@
         </svg>
         <div class="board selecting-board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee}" ng-click="bees.boardClicked($event)">
           <div class="flower" ng-repeat="f in bees.flowers" ng-class="b.type" ng-style="{ left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}">
-            <p>{{f.pollen | number: 0}}</p>
+            <div circle-gauge min="0" max="500" value="f.pollen" back="#000" display="#ffff00" radius="{{f.w / 2}}" thickness="5"></div>
           </div>
 
           <!-- | filter:{team: bees.player} -->

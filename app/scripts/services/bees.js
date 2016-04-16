@@ -1,5 +1,5 @@
 (function(module) {
-  var testingtime = 0.5;
+  var testingtime = 0.05;
 
   var worker = new Worker('scripts/workers/bees.js');
   //AABB testing
@@ -32,15 +32,15 @@
 
   module.service('beesConfig', function() {
     return {
-      player: -1,
+      player: 1,
       players: 3,
-      height: 1000,
-      width: 1000,
+      height: 3600,
+      width: 3600,
       flowers: 15,
       scarcity: 1000,
-      precision: 1,
+      precision: 0.01,
       colors: d3.scale.category10().domain(d3.range(10)),
-      pollenRate: 0.08 * testingtime,
+      pollenRate: 1 * testingtime,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.4 * testingtime
@@ -52,7 +52,7 @@
       minpollen: 30,
       maxpollen: 150,
       maxtravel: 0.2,
-      dronePercentage: 0.2,
+      dronePercentage: 0.1,
       life: {
         drone: 10,
         hive: 100,
@@ -65,19 +65,19 @@
         injury: 0.1 * testingtime
       },
       bee: {
-        height: 40,
-        width: 40,
+        height: 50,
+        width: 50,
         repair: 0.001 * testingtime
       },
       hive: {
-        height: 70,
-        width: 70,
+        height: 60,
+        width: 60,
         repair: 0.003,
         cost: 0.0005 * testingtime
       },
       flower: {
-        height: 40,
-        width: 40,
+        height: 30,
+        width: 30,
         regrow: 0.01 * testingtime
       },
       intrudercheck: 10,
@@ -255,10 +255,13 @@
         //   updateFields.apply(self, [v, 'hives']);
         // })
 
-        e.data.bees.filter(function(b) {
-          return b.goal !== 'user';
-        }).map(function(v) {
-          updateFields.apply(self, [v, 'bees']);
+        e.data.bees.forEach(function(v) {
+          if(v.goal == 'user'){
+            var me = _(self.bees).find({id: v.id});
+            me.life = v.life;
+          }else{
+            updateFields.apply(self, [v, 'bees']);
+          }
         })
 
         self.flowers = e.data.flowers;

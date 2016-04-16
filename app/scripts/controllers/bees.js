@@ -200,7 +200,7 @@
           id: me.id
         });
         if (!me) {
-          debugger;
+          return;
         }
 
         me.dx = t.x;
@@ -218,7 +218,7 @@
           id: me.id
         });
         if (!me2) {
-          debugger;
+          return;
         }
 
         me.dx = f.x;

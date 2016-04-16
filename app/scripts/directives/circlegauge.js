@@ -96,7 +96,7 @@
           path = path.data(pie); // compute the new angles
           path.transition()
             .ease('linear')
-            .duration(1000)
+            .duration(0)
             .attrTween("d", arcTween).each("end", function() {
               pie.value(function(d) {
                 return d.end;
