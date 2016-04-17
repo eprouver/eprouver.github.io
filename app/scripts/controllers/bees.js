@@ -26,12 +26,13 @@
       self.flowers = [];
       self.colors = beesConfig.colors;
       beesServ.territories = startTerritory(beesConfig.width, beesConfig.height);
+      self.usePixi = beesConfig.usePixi;
 
       if (beesConfig.usePixi) {
         var textures = {
-          //flowers: PIXI.Texture.fromImage("images/bees/flower.png"),
-          bees: PIXI.Texture.fromImage("images/bees/bee_sm.png", true),
-          hives: PIXI.Texture.fromImage("images/bees/hive_sm.png", true)
+          flowers: PIXI.Texture.fromImage("images/space/ast.png"),
+          bees: PIXI.Texture.fromImage("images/space/ship.png", true),
+          hives: PIXI.Texture.fromImage("images/space/station.png", true)
             // bees: PIXI.Texture.fromImage("images/flat/drone_1.png"),
             // hives: PIXI.Texture.fromImage("images/flat/drone_2.png")
         }
@@ -39,7 +40,17 @@
 
 
       function checklife(b) {
-        return b.life >= 0;
+
+        if(b.life <= 0){
+          if(beesConfig.usePixi){
+            if(b.sprite){
+              stage.removeChild(b.sprite)
+            }
+          }
+          return false;
+        }
+
+        return true;
       };
 
       function updateSprite(v, texture) {
@@ -63,7 +74,9 @@
 
           beesServ.flowers.forEach(function(v) {
             v = updateFields.apply(self, [v, 'flowers']);
-
+            if (beesConfig.usePixi) {
+              updateSprite(v, 'flowers');
+            }
           });
           self.flowers = self.flowers.filter(checklife);
 
@@ -102,7 +115,7 @@
         if (beesConfig.usePixi) {
           renderer = new PIXI.WebGLRenderer(beesConfig.width, beesConfig.height);
           stage = new PIXI.Container();
-          renderer.backgroundColor = 0xFFFFFF;
+          renderer.backgroundColor = 0x000000;
           $('#bees .board-holder').append(renderer.view);
         }
 
@@ -231,7 +244,7 @@
         }
 
         if (beesServ.createHive(mybee.team, mybee.x, mybee.y, mybee.pollen / 2)) {
-          mybeee.life = -1;
+          mybee.life = -1;
         }
 
         self.unselect(e);

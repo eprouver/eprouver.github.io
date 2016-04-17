@@ -39,15 +39,15 @@
   module.service('beesConfig', function() {
     return {
       player: 0,
-      players: 2,
-      height: 800,
-      width: 800,
+      players: 3,
+      height: 1800,
+      width: 1800,
       flowers: 15,
       scarcity: 1000,
       precision: 1,
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
-      usePixi: false,
+      usePixi: true,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.4 * testingtime
@@ -473,9 +473,14 @@
         self.bees.filter(function(b){
           return b.type == 'soldier';
         }).filter(function(b){
-          return b.target && b.target.type != 'hive';
+          return b.target && b.target.type;
         }).forEach(function(b){
-          b.target = _(self.bees).find({id: b.target.id});
+          if(b.target.type == 'hive'){
+            b.target = _(self.hives).find({id: b.target.id});
+          }else{
+            b.target = _(self.bees).find({id: b.target.id});
+          }
+
         })
 
         try {
