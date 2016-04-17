@@ -15,94 +15,142 @@
     function($scope, beesServ, $interval, startTerritory,
       $timeout, beesConfig, compare, updateFields) {
       var self = this;
-      self.player = beesConfig.player;
-      beesServ.reset();
-
-      self.cost = beesConfig.cost;
-
-      for (var i = 0; i < beesConfig.flowers; i++) {
-        beesServ.createFlower('flower');
-      }
-
-      $scope.$watch('bees.hives.length', function(o, n, scope) {
-        beesServ.territories.setVerts(scope.bees.hives.map(function(h) {
-          return {
-            team: h.team,
-            loc: [h.x, h.y],
-            fill: beesConfig.colors(h.team)
-          };
-        }));
-        beesServ.territories.redraw();
-        beesServ.updateFlowers();
-      })
-
-      for (var i = 0; i < beesConfig.players; i++) {
-        beesServ.createTeam('test' + i);
-      }
-      self.bees = beesServ.bees;
-      self.hives = beesServ.hives;
-      self.colors = beesConfig.colors;
-      self.flowers = beesServ.flowers;
-      beesServ.territories = startTerritory(beesConfig.width, beesConfig.height);
-      $timeout(function() {
-        self.scaler = 1; //(1 / beesConfig.width) * window.innerWidth * 0.85;
-
-        var iscroll = new IScroll('#scroller', {
-          scrollX: true,
-          freeScroll: true,
-          zoom: true,
-          mouseWheel: true,
-          wheelAction: 'zoom',
-          zoomMin: 0.001,
-          zoomStart: 5,
-          zoomMax: 20
-        });
-
-        self.zoomer = self.scaler;
-
-        iscroll.on('zoomEnd', function() {
-          self.zoomer = self.scaler * this.scale;
-        })
-
-        var hive = _(beesServ.hives).find({
-          team: beesConfig.player
-        });
-        if (hive) {
-          iscroll.scrollTo(-(hive.x - beesConfig.hive.width * 10) * self.scaler, -(hive.y - beesConfig.hive.height * 10) * self.scaler, 2000)
-        }
-      }, 100)
-
       var prevTime = 0;
+      var renderer;
+      var stage;
 
+      self.cost = {};
+      self.player = -1;
+      self.bees = [];
+      self.hives = [];
+      self.flowers = [];
+      self.colors = beesConfig.colors;
+      beesServ.territories = startTerritory(beesConfig.width, beesConfig.height);
+
+      if (beesConfig.usePixi) {
+        var textures = {
+          //flowers: PIXI.Texture.fromImage("images/bees/flower.png"),
+          bees: PIXI.Texture.fromImage("images/bees/bee_sm.png", true),
+          hives: PIXI.Texture.fromImage("images/bees/hive_sm.png", true)
+            // bees: PIXI.Texture.fromImage("images/flat/drone_1.png"),
+            // hives: PIXI.Texture.fromImage("images/flat/drone_2.png")
+        }
+      }
 
 
       function checklife(b) {
         return b.life >= 0;
       };
 
+      function updateSprite(v, texture) {
+        if (!v) return;
+
+        if (!v.sprite) {
+          v.sprite = new PIXI.Sprite(textures[texture]);
+          v.sprite.anchor.x = 0.5;
+          v.sprite.anchor.y = 0.5;
+          stage.addChild(v.sprite);
+        }
+
+        v.sprite.position.x = v.x;
+        v.sprite.position.y = v.y;
+      }
+
       function update(time) {
         var delta = (time || 0) - prevTime;
         prevTime = time;
         beesServ.update(delta / (Math.pow(self.zoomer, 1.2))).then(function() {
 
-          beesServ.flowers.map(function(v) {
-            return updateFields.apply(self, [v, 'flowers']);
+          beesServ.flowers.forEach(function(v) {
+            v = updateFields.apply(self, [v, 'flowers']);
+
+          });
+          self.flowers = self.flowers.filter(checklife);
+
+          beesServ.bees.forEach(function(v) {
+            v = updateFields.apply(self, [v, 'bees']);
+            if (beesConfig.usePixi) {
+              updateSprite(v, 'bees');
+            }
+
           })
           self.bees = self.bees.filter(checklife);
-          beesServ.bees.map(function(v) {
-            updateFields.apply(self, [v, 'bees']);
-          })
-          self.flowers = self.flowers.filter(checklife);
-          beesServ.hives.map(function(v) {
-            updateFields.apply(self, [v, 'hives']);
+
+          beesServ.hives.forEach(function(v) {
+            v = updateFields.apply(self, [v, 'hives']);
+            if (beesConfig.usePixi) {
+              updateSprite(v, 'hives');
+            }
           })
           self.hives = self.hives.filter(checklife);
 
+          if (beesConfig.usePixi) {
+            renderer.render(stage);
+          }
+
+          requestAnimFrame(update);
+        }, function(){
           requestAnimFrame(update);
         });
       };
 
-      $timeout(update)
+
+
+      self.init = function() {
+        beesServ.reset();
+
+        if (beesConfig.usePixi) {
+          renderer = new PIXI.WebGLRenderer(beesConfig.width, beesConfig.height);
+          stage = new PIXI.Container();
+          renderer.backgroundColor = 0xFFFFFF;
+          $('#bees .board-holder').append(renderer.view);
+        }
+
+        for (var i = 0; i < beesConfig.flowers; i++) {
+          beesServ.createFlower('flower');
+        }
+
+        for (var i = 0; i < beesConfig.players; i++) {
+          beesServ.createTeam('test' + i);
+        }
+
+        self.cost = beesConfig.cost;
+        self.player = beesConfig.player;
+        self.bees = beesServ.bees;
+        self.hives = beesServ.hives;
+        self.colors = beesConfig.colors;
+        self.flowers = beesServ.flowers;
+
+        $timeout(function() {
+          self.scaler = 1; //(1 / beesConfig.width) * window.innerWidth * 0.85;
+
+          var iscroll = new IScroll('#scroller', {
+            scrollX: true,
+            freeScroll: true,
+            zoom: true,
+            mouseWheel: true,
+            wheelAction: 'zoom',
+            zoomMin: 0.001,
+            zoomStart: 5,
+            zoomMax: 20
+          });
+
+          self.zoomer = self.scaler;
+
+          iscroll.on('zoomEnd', function() {
+            self.zoomer = self.scaler * this.scale;
+          })
+
+          var hive = _(beesServ.hives).find({
+            team: beesConfig.player
+          });
+          if (hive) {
+            iscroll.scrollTo(-(hive.x - beesConfig.hive.width * 10) * self.scaler, -(hive.y - beesConfig.hive.height * 10) * self.scaler, 2000)
+          }
+        }, 100)
+
+        $timeout(update)
+      }
 
       self.boardSize = function(n) {
         if (!n) n = 1;
@@ -119,7 +167,8 @@
         b.goal = 'user';
         b.dx = b.x;
         b.dy = b.y;
-        self.selectedBee = b;
+        self.selectedBeeId = b.id;
+        self.selectedBeeType = b.type;
         self.boardState = 'beeSelected';
         e.stopPropagation();
         e.preventDefault();
@@ -139,7 +188,7 @@
           case 'beeSelected':
 
             var mybee = _(beesServ.bees).find({
-              id: self.selectedBee.id
+              id: self.selectedBeeId
             })
             mybee.dx = e.offsetX;
             mybee.dy = e.offsetY;
@@ -152,14 +201,17 @@
       };
 
       self.unselect = function(e) {
-        self.selectedHive = self.selectedBee = self.boardState = undefined;
+        self.selectedHive = self.selectedBeeId = self.boardState = undefined;
         if (!e) return;
         e.stopPropagation();
         e.preventDefault();
       };
 
       self.buildHive = function(e) {
-        if (self.selectedBee.type !== 'drone') {
+        var mybee = _(beesServ.bees).find({
+          id: self.selectedBeeId
+        });
+        if (mybee.type !== 'drone') {
           self.unselect(e);
           return;
         }
@@ -167,7 +219,7 @@
         var canBuild = true;
 
         self.hives.forEach(function(h) {
-          if (compare(self.selectedBee, h)) {
+          if (compare(mybee, h)) {
             canBuild = false;
             return;
           }
@@ -178,8 +230,8 @@
           return;
         }
 
-        if (beesServ.createHive(self.selectedBee.team, self.selectedBee.x, self.selectedBee.y, self.selectedBee.pollen / 2)) {
-          self.selectedBee.life = -1;
+        if (beesServ.createHive(mybee.team, mybee.x, mybee.y, mybee.pollen / 2)) {
+          mybeee.life = -1;
         }
 
         self.unselect(e);
@@ -187,7 +239,7 @@
 
       self.spawn = function(type, h, e) {
         beesServ.createBee(h.team, h, type, h.x, h.y);
-        h.pollen -= beesConfig.cost[type];
+        h.costs += beesConfig.cost[type];
         self.unselect(e);
       };
 
@@ -196,7 +248,7 @@
         e.preventDefault();
         self.unselect(e);
 
-        me = _(beesServ.bees).find({
+        me = _(beesServ.hives).find({
           id: me.id
         });
         if (!me) {
@@ -208,16 +260,16 @@
         me.target = t;
       };
 
-      self.polinate = function(f, me, e) {
+      self.polinate = function(f, id, e) {
         self.boardState = undefined;
         e.stopPropagation();
         e.preventDefault();
         self.unselect(e);
 
-        var me2 = _(beesServ.bees).find({
-          id: me.id
+        var me = _(beesServ.bees).find({
+          id: id
         });
-        if (!me2) {
+        if (!me) {
           return;
         }
 
@@ -226,6 +278,26 @@
         me.target = f;
         me.goal = undefined;
       };
+
+      $scope.$watch('bees.hives.length', function(o, n, scope) {
+        if(!beesServ.territories) return;
+        beesServ.territories.setVerts(scope.bees.hives.map(function(h) {
+          return {
+            team: h.team,
+            loc: [h.x, h.y],
+            fill: beesConfig.colors(h.team)
+          };
+        }));
+        beesServ.territories.redraw();
+        beesServ.updateFlowers();
+      });
+
+      self.init();
+
+        // beesServ.createBee(1, null, 'soldier', 400, 400);
+        // beesServ.createBee(2, null, 'soldier', 600, 600);
+        // requestAnimFrame(update)
+
 
     }
   ]);

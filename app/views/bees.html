@@ -1,8 +1,14 @@
 <div id="bees">
+  <div class="list-group" style="position:fixed; top: 0; left: 0">
+    <div class="list-group-item" ng-repeat="team in bees.bees | filter:{type: 'soldier'}">
+      {{team.x == team.dx}}: {{team.y == team.dy}}  || {{target == undefined}}
+    </div>
+  </div>
+
   <div id="scroller">
     <div ng-style="bees.boardSize(bees.scaler)">
       <div style="transform: scale({{bees.scaler}}); transform-origin: 0 0">
-        <div class="board board-holder" ng-style="bees.boardSize()"></div>
+        <div class="board board-holder"></div>
         <svg id="territory" class="board" ng-style="bees.boardSize()">
           <defs>
             <filter id="borders">
@@ -14,43 +20,40 @@
         </svg>
         <div class="board selecting-board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee}" ng-click="bees.boardClicked($event)">
           <div class="flower" ng-repeat="f in bees.flowers" ng-class="b.type" ng-style="{ left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}">
-            <div circle-gauge min="0" max="500" value="f.pollen" back="#000" display="#ffff00" radius="{{f.w / 2}}" thickness="5"></div>
+            <div class="icon"></div>
           </div>
 
           <!-- | filter:{team: bees.player} -->
-          <div class="hive" ng-repeat="h in bees.hives" ng-class="{selectedHive: h == bees.selectedHive, mine: h.team == bees.player}" ng-click="bees.selectHive(h, $event)" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2, background: bees.colors(h.team)}">
+          <div class="hive" ng-repeat="h in bees.hives" ng-class="{selectedHive: h == bees.selectedHive, mine: h.team == bees.player}" ng-click="bees.selectHive(h, $event)" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2}">
             <div class="options btn-group" ng-if="h == bees.selectedHive">
               <button ng-disabled="h.pollen < bees.cost.soldier" class="btn btn-danger" ng-click="bees.spawn('soldier', h, $event)">S</button>
               <button ng-disabled="h.pollen < bees.cost.drone" class="btn btn-info" ng-click="bees.spawn('drone', h, $event)">D</button>
             </div>
-            <p>{{h.life | number: 0}}</p>
-            <p ng-if="::h.team == bees.player">{{h.pollen | number: 0}}</p>
+            <div class="icon"></div>
+            <div circle-gauge min="0" max="{{h.maxLife}}" value="h.life" back="#aaa" display="{{bees.colors(h.team)}}" radius="{{h.w / 2}}" thickness="5"></div>
+            <p ng-if="::h.team == bees.player || bees.player == -1">{{h.pollen | number: 0}}</p>
+
           </div>
 
-          <div class="bee" ng-click="bees.selectBee(b, $event)" ng-repeat="b in bees.bees" ng-class="{mine: b.team == bees.player, selectedBee: b == bees.selectedBee, soldier: b.type == 'soldier', drone: b.type == 'drone'}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2, background: bees.colors(b.team)}">
-            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone' && b.team == bees.player" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 5}}" , thickness="5"></div>
+          <div class="bee" ng-click="bees.selectBee(b, $event)" ng-repeat="b in bees.bees" ng-class="{mine: b.team == bees.player, selectedBee: b == bees.selectedBee, soldier: b.type == 'soldier', drone: b.type == 'drone'}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2}">
+            <div class="icon"></div>
+            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone' && (b.team == bees.player || bees.player == -1)" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 5}}" , thickness="5"></div>
             <div circle-gauge min="0" max="{{b.maxLife}}" value="b.life" back="#aaa" display="{{bees.colors(b.team)}}" radius="{{b.w / 2}}" , thickness="5"></div>
-
           </div>
         </div>
 
-        <div class="board" ng-style="bees.boardSize()" ng-if="bees.selectedBee" ng-click="bees.boardClicked($event)">
-          <div id="soldier-view" ng-if="bees.selectedBee.type == 'soldier'">
-            <div class="hive" ng-repeat="h in bees.hives | filter: {team: '!' +bees.selectedBee.team}" ng-click="bees.attack(h, bees.selectedBee, $event)" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, background: bees.colors(h.team), marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
-
-            <!-- <div class="bee selectedBee"
-                ng-class="bees.selectedBee.type"
-                ng-click="bee.selectedBee.type = 'drone'; bees.unselect($event);"
-                ng-style="{left: bees.selectedBee.x, top: bees.selectedBee.y, height: bees.selectedBee.h, width: bees.selectedBee.w, marginTop: -bees.selectedBee.h/2, marginLeft: -bees.selectedBee.w/2}"></div> -->
+        <div class="board" ng-style="bees.boardSize()" ng-if="bees.selectedBeeId != undefined" ng-click="bees.boardClicked($event)">
+          <div id="soldier-view" ng-if="bees.selectedBeeType == 'soldier'">
+            <div class="hive" ng-repeat="h in bees.hives | filter: {team: '!' +bees.player}" ng-click="bees.attack(h, bees.selectedBeeId, $event)" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
 
           </div>
 
-          <div id="drone-view" ng-if="bees.selectedBee.type == 'drone'">
-            <div class="flower" ng-repeat="f in bees.flowers" ng-click="bees.polinate(f, bees.selectedBee, $event)" ng-class="b.type" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}"></div>
+          <div id="drone-view" ng-if="bees.selectedBeeType == 'drone'">
+            <div class="flower" ng-repeat="f in bees.flowers" ng-click="bees.polinate(f, bees.selectedBeeId, $event)" ng-class="b.type" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}"></div>
 
-            <div class="hive" ng-if="bees.selectedBee.home == h" ng-repeat="h in bees.hives | filter: {team: bees.selectedBee.team}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, background: bees.colors(h.team), marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
+            <div class="hive" ng-repeat="h in bees.hives | filter: {team: bees.player}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2}"></div>
 
-            <div class="bee selectedBee" ng-class="bees.selectedBee.type" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: bees.selectedBee.x, top: bees.selectedBee.y, height: bees.selectedBee.h, width: bees.selectedBee.w, marginTop: -bees.selectedBee.h/2, marginLeft: -bees.selectedBee.w/2}">
+            <div class="bee selectedBee" ng-repeat="b in bees.bees | filter: {id: bees.selectedBeeId}" ng-class="b.type" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2}">
               <div class="btn btn-success" ng-click="bees.buildHive($event)">
                 B
               </div>

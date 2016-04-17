@@ -6,7 +6,8 @@
   top: 0;
   left: 0;
   padding: 10vmin;
-  background:black;
+
+  //background:black;
   #scroller {
     width: 100%;
     height: 70vh;
@@ -40,36 +41,67 @@
         pointer-events: auto !important;
       }
     }
+    div[circle-gauge] {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .icon{
+      height: 100%;
+      width: 100%;
+      position:relative;
+      background: url(../images/bees/hive.svg) center center no-repeat;
+      background-size: contain !important;
+    }
     .flower {
       position: absolute;
-      // background: black;
-      // color: white;
+
+      .icon{
+        background: url(../images/bees/flower.svg) center center no-repeat;
+      }
     }
     .hive {
       text-align: center;
-      transition: transform 0.5s ease;
       position: absolute;
+      padding: 10px;
+
+      .icon{
+        background: url(../images/bees/hive.svg) center center no-repeat;
+      }
+
       &.selectedHive {
         background-color: yellow !important;
         z-index: 9;
       }
+      p {
+        color: white;
+        font-weight: bold;
+        position: absolute;
+        width: 86%;
+        text-align: center;
+        left: 0;
+        bottom: -13px;
+        background: #191919;
+        border-radius: 1em;
+        font-size: 11px;
+        margin: 0 8%;
+      }
     }
     .bee {
-      transition: transform 0.5s ease;
       position: absolute;
-      border-radius: 20px;
-      div[circle-gauge]{
-        position: absolute;
-        top: 0;
-        left: 0;
+      padding: 10px;
 
-        &.inner-gauge{
+      .icon{
+        background: url(../images/bees/bee.svg) center center no-repeat;
+      }
+
+      div[circle-gauge] {
+        &.inner-gauge {
           top: 5px;
           left: 5px;
         }
       }
-
-
 
       //transition: top 0.1s linear, left 0.1s linear;
       &.selectedBee {
@@ -77,6 +109,7 @@
       }
       &.soldier {
         box-shadow: 0 0 0 4px red;
+        border-radius: 10em;
       }
     }
     #drone-view {

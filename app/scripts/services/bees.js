@@ -1,5 +1,5 @@
 (function(module) {
-  var testingtime = 0.05;
+  var testingtime = 0.5;
 
   var worker = new Worker('scripts/workers/bees.js');
   //AABB testing
@@ -23,36 +23,43 @@
         id: a.id
       });
 
-      if (dest == undefined) {
+      if (!dest) {
         this[type].push(a);
       }
+
+      if (a.costs > 0) {
+        a.pollen = a.pollen - a.costs;
+        a.costs = 0;
+      }
+
       return _.extend(dest, a);
     }
   })
 
   module.service('beesConfig', function() {
     return {
-      player: 1,
-      players: 3,
-      height: 3600,
-      width: 3600,
+      player: 0,
+      players: 2,
+      height: 800,
+      width: 800,
       flowers: 15,
       scarcity: 1000,
-      precision: 0.01,
+      precision: 1,
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
+      usePixi: false,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.4 * testingtime
       },
       cost: {
-        drone: 100,
+        drone: 400,
         soldier: 800
       },
       minpollen: 30,
       maxpollen: 150,
       maxtravel: 0.2,
-      dronePercentage: 0.1,
+      dronePercentage: 0.5,
       life: {
         drone: 10,
         hive: 100,
@@ -106,8 +113,6 @@
   function distance(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
   }
-
-
 
 
 
@@ -192,8 +197,10 @@
           w: beesConfig.hive.width,
           team: team,
           life: beesConfig.life.hive,
+          maxLife: beesConfig.life.hive,
           pollen: pollen || 0,
-          type: 'hive'
+          type: 'hive',
+          costs: 0
         };
 
         self.hives.push(hive);
@@ -251,22 +258,23 @@
         //   return updateFields.apply(self, [v, 'flowers']);
         // })
 
-        // e.data.hives.map(function(v){
-        //   updateFields.apply(self, [v, 'hives']);
-        // })
+        e.data.hives.map(function(v) {
+          updateFields.apply(self, [v, 'hives']);
+        })
 
         e.data.bees.forEach(function(v) {
-          if(v.goal == 'user'){
-            var me = _(self.bees).find({id: v.id});
+          if (v.goal == 'user') {
+            var me = _(self.bees).find({
+              id: v.id
+            });
             me.life = v.life;
-          }else{
+          } else {
             updateFields.apply(self, [v, 'bees']);
           }
         })
 
         self.flowers = e.data.flowers;
-        self.hives = e.data.hives;
-
+        //self.hives = e.data.hives;
         //self.bees = e.data.bees;
 
         self.teams = e.data.teams;
@@ -277,9 +285,11 @@
           self.createFlower('flower');
         }
 
-
+        //Should Hives send out more bees?
         self.hives.filter(function(h) {
           return h.team != beesConfig.player;
+        }).filter(function(h) {
+          return h.costs <= 0;
         }).forEach(function(h) {
           var team = self.teams[h.team];
 
@@ -288,13 +298,13 @@
           if (team.soldiers < (team.drones * beesConfig.dronePercentage) && team.drones > team.hives) {
             if (h.pollen > beesConfig.cost.soldier) {
               self.createBee(h.team, h, 'soldier', h.x, h.y);
-              h.pollen -= beesConfig.cost.soldier;
+              h.costs += beesConfig.cost.soldier;
               return;
             }
           } else {
             if (h.pollen > beesConfig.cost.drone) {
               self.createBee(h.team, h, 'drone', h.x, h.y);
-              h.pollen -= beesConfig.cost.drone;
+              h.costs += beesConfig.cost.drone;
               return;
             }
           }
@@ -313,16 +323,16 @@
           self.teams.forEach(function(t) {
             if (t.intruders.length > 0) {
               var filtered = t.intruders
-              .map(function(i){
-                return _(self.bees).find({
-                  id: i.id
-                });
-              })
-              .filter(function(i) {
-                if(!i) return false;
+                .map(function(i) {
+                  return _(self.bees).find({
+                    id: i.id
+                  });
+                })
+                .filter(function(i) {
+                  if (!i) return false;
 
-                return i.life > 0 && self.territories.findTerritory(i.x, i.y) == t.team;
-              });
+                  return i.life > 0 && self.territories.findTerritory(i.x, i.y) == t.team;
+                });
 
               t.intruders = filtered;
             }
@@ -414,6 +424,38 @@
         defer = undefined;
       }, false);
 
+
+      function removeSprite(v, depth) {
+        var transfer = {};
+
+        for (var i in v) {
+          //TODO REPLACE HOME TARGET AND INTRUDERS WITH IDS
+          if (i == 'home' || i == 'target') {
+
+            if (!depth) {
+              transfer[i] = removeSprite(v[i], 1);
+            }
+
+            continue;
+          }
+
+          if (i == 'intruders') {
+            if (!depth) {
+              transfer[i] = v[i].map(function(b) {
+                return removeSprite(b, 0);
+              });
+            }
+            continue;
+          }
+
+          if (i !== 'sprite') {
+            transfer[i] = v[i];
+          }
+        }
+
+        return transfer;
+      }
+
       self.update = function(delta) {
         if (defer !== undefined) return;
         if (!delta) {
@@ -427,15 +469,41 @@
         self.hives = self.hives.filter(checklife);
         self.flowers = self.flowers.filter(checklife);
 
-        worker.postMessage({
-          bees: self.bees,
-          hives: self.hives,
-          flowers: self.flowers,
-          teams: self.teams,
-          delta: delta,
-          config: config,
-          timestamp: _.now()
-        });
+        //update moving targets
+        self.bees.filter(function(b){
+          return b.type == 'soldier';
+        }).filter(function(b){
+          return b.target && b.target.type != 'hive';
+        }).forEach(function(b){
+          b.target = _(self.bees).find({id: b.target.id});
+        })
+
+        try {
+          var transfer = JSON.stringify({
+            bees: self.bees.map(function(b){
+              return removeSprite(b);
+            }),
+            hives: self.hives.map(function(b){
+              return removeSprite(b);
+            }),
+            flowers: self.flowers.map(function(b){
+              return removeSprite(b);
+            }),
+            teams: self.teams.map(function(b){
+              return removeSprite(b);
+            }),
+            delta: delta,
+            config: config,
+            timestamp: _.now()
+          });
+        } catch (e) {
+          debugger;
+          console.error(e);
+          return $q.reject();
+        }
+
+
+        worker.postMessage(transfer);
 
         return defer.promise;
       };
