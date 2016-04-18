@@ -38,28 +38,28 @@
 
   module.service('beesConfig', function() {
     return {
-      player: 0,
+      player: -1,
       players: 3,
-      height: 1800,
-      width: 1800,
+      height: 800,
+      width: 800,
       flowers: 15,
       scarcity: 1000,
       precision: 1,
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
-      usePixi: true,
+      usePixi: false,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.4 * testingtime
       },
       cost: {
-        drone: 400,
+        drone: 100,
         soldier: 800
       },
       minpollen: 30,
       maxpollen: 150,
       maxtravel: 0.2,
-      dronePercentage: 0.5,
+      dronePercentage: 1,
       life: {
         drone: 10,
         hive: 100,
@@ -370,6 +370,8 @@
             if (b.dy < 0) b.dy = 0;
             if (b.dx > beesConfig.width) b.dx = beesConfig.width;
             if (b.dy > beesConfig.height) b.dy = beesConfig.height;
+
+            b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
 
             //Move the bee
             if (Math.abs(b.x - b.dx) > beesConfig.precision || Math.abs(b.y - b.dy) > beesConfig.precision) {

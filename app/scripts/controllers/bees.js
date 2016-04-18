@@ -65,6 +65,7 @@
 
         v.sprite.position.x = v.x;
         v.sprite.position.y = v.y;
+        v.sprite.rotation = v.rotate || 0;
       }
 
       function update(time) {

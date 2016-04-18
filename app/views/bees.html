@@ -30,15 +30,15 @@
               <button ng-disabled="h.pollen < bees.cost.drone" class="btn btn-info" ng-click="bees.spawn('drone', h, $event)">D: {{bees.cost.drone}}</button>
             </div>
             <div class="icon"></div>
-            <div circle-gauge min="0" max="{{h.maxLife}}" value="h.life" back="#aaa" display="{{bees.colors(h.team)}}" radius="{{h.w / 2}}" thickness="5"></div>
+            <div circle-gauge min="0" max="{{h.maxLife}}" value="h.life" back="#aaa" display="{{bees.colors(h.team)}}" radius="{{h.w / 2}}" thickness="3"></div>
             <p ng-if="::h.team == bees.player || bees.player == -1">{{h.pollen | number: 0}}</p>
 
           </div>
 
           <div class="bee" ng-click="bees.selectBee(b, $event)" ng-repeat="b in bees.bees" ng-class="{mine: b.team == bees.player, selectedBee: b == bees.selectedBee, soldier: b.type == 'soldier', drone: b.type == 'drone'}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2}">
-            <div class="icon"></div>
-            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone' && (b.team == bees.player || bees.player == -1)" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 5}}" , thickness="5"></div>
-            <div circle-gauge min="0" max="{{b.maxLife}}" value="b.life" back="#aaa" display="{{bees.colors(b.team)}}" radius="{{b.w / 2}}" , thickness="5"></div>
+            <div class="icon" ng-style="{transform: 'rotate('+(b.rotate + 3.14)+'rad)'}"></div>
+            <div circle-gauge class="inner-gauge" ng-if="b.type == 'drone' && (b.team == bees.player || bees.player == -1)" min="0" max="{{b.maxPollen}}" value="b.pollen" back="#aaa" display="#ffff00" radius="{{(b.w / 2) - 3}}" , thickness="3"></div>
+            <div circle-gauge min="0" max="{{b.maxLife}}" value="b.life" back="#aaa" display="{{bees.colors(b.team)}}" radius="{{b.w / 2}}" , thickness="3"></div>
           </div>
         </div>
 
