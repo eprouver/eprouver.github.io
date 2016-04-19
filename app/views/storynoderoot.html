@@ -1,22 +1,36 @@
 <div>
-    <div class="btn btn-block btn-sm btn-reader">
-      <h2> Page Title </h2>
-      <div>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum sem purus, eu consequat nunc commodo sit amet. Praesent at justo venenatis, faucibus lorem eu, fringilla libero. Donec vehicula tempus tincidunt. Cras nec imperdiet neque. Nulla vitae arcu sit amet sapien accumsan eleifend eu eget ex. Nunc quis lacus orci. In vitae nunc convallis, consectetur dui in, sollicitudin nunc. Pellentesque consequat odio porta dolor finibus scelerisque. Aenean convallis metus sapien, et posuere magna condimentum et. Nunc iaculis quis velit ut consectetur. Mauris ultrices consequat leo, a gravida arcu placerat sit amet. Etiam pretium lorem quis venenatis sollicitudin. Suspendisse cursus nisi dictum justo lobortis, vel ultricies nibh consectetur.</p>
+  <div class="btn btn-block btn-sm btn-reader">
+    <h2>
+      Page Title
+    </h2>
+    <div>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum sem purus, eu consequat nunc commodo sit amet. Praesent at justo venenatis, faucibus lorem eu, fringilla libero. Donec vehicula tempus tincidunt. Cras nec imperdiet neque. Nulla vitae arcu sit amet sapien accumsan eleifend eu eget ex. Nunc quis lacus orci. In vitae nunc convallis, consectetur dui in, sollicitudin nunc. Pellentesque consequat odio porta dolor finibus scelerisque. Aenean convallis metus sapien, et posuere magna condimentum et. Nunc iaculis quis velit ut consectetur. Mauris ultrices consequat leo, a gravida arcu placerat sit amet. Etiam pretium lorem quis venenatis sollicitudin. Suspendisse cursus nisi dictum justo lobortis, vel ultricies nibh consectetur.</p>
 
-        <p>Praesent aliquet diam sit amet felis egestas, a iaculis nunc placerat. Duis in tincidunt elit. Suspendisse at tortor eget orci facilisis tempus. Suspendisse a faucibus ipsum, ut semper sem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ex dui, tristique a urna ut, egestas hendrerit ante. Aenean congue leo id nisl pretium porttitor. Donec ex arcu, tempus vel enim sit amet, dignissim lacinia mi. Phasellus ut odio at purus volutpat consequat.</p>
-      </div>
-      <p class="center">&hellip;</p>
+      <p>Praesent aliquet diam sit amet felis egestas, a iaculis nunc placerat. Duis in tincidunt elit. Suspendisse at tortor eget orci facilisis tempus. Suspendisse a faucibus ipsum, ut semper sem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ex dui, tristique a urna ut, egestas hendrerit ante. Aenean congue leo id nisl pretium porttitor. Donec ex arcu, tempus vel enim sit amet, dignissim lacinia mi. Phasellus ut odio at purus volutpat consequat.</p>
     </div>
-    <div class="row center options-holder">
-      <div ng-class="'col-xs-' + colClass(kids.length < 4? kids.length+1: kids.length) + ' ' + (bb.selected? '':'animated swing') " ng-repeat="bb in kids">
-        <div class="down-branch btn btn-option btn-block" ng-click="ntpCtrl.showKids(bb, $index, $event)">Option</div>
-      </div>
-      <div class="center" ng-class="'col-xs-' + colClass(kids.length+1)" ng-if="kids.length < 4">
-        <div class="down-branch btn btn-add">
-          <span class="glyphicon glyphicon-plus"></span>
-        </div>
+    <p class="center">&hellip;</p>
+  </div>
+  <div class="row center options-holder">
+    <div ng-class="'col-xs-' + colClass(kids.length < 4? kids.length+1: kids.length) + ' ' + (bb.selected? '':'animated swing') " ng-repeat="bb in kids">
+      <div class="down-branch btn btn-option btn-block" ng-click="ntpCtrl.showKids(bb, $index, $event)">Option</div>
+    </div>
+    <div class="center" ng-class="'col-xs-' + colClass(kids.length+1)" ng-if="kids.length < 4">
+      <div class="down-branch btn btn-add" ng-click="ntpCtrl.addOption(bb, $event)">
+        <span class="glyphicon glyphicon-plus"></span>
       </div>
     </div>
-    <div class="childholder"></div>
+  </div>
+  <div class="childholder"></div>
+  <div class="editholder">
+
+    <h2>
+      <input placeholder="New Choice" type="text"/>
+    </h2>
+    <p>
+      <textarea rows="7" placeholder="What happens next?"></textarea>
+    </p>
+    <p>
+      <button class="btn btn-add btn-lg btn-block">Start New Path!</button>
+    </p>
+  </div>
 </div>

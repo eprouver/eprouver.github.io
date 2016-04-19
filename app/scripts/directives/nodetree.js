@@ -16,6 +16,7 @@ angular.module('frontsApp')
       controller: ['$scope', '$element', function($scope, $element) {
         var self = this;
         var childholder = $element.find('.childholder');
+        var editholder = $element.find('.editholder').hide();
         var kidElem = [];
 
         $scope.$watch('kids', function(n) {
@@ -30,11 +31,20 @@ angular.module('frontsApp')
           return ~~(12 / num);
         };
 
+        self.addOption = function(parent, e){
+          var par = $(e.currentTarget)
+          $(e.target).parent().siblings().find('.btn').removeClass('selected')
+          par.addClass('selected').addClass('editing');
+          childholder.children().hide();
+          editholder.show();
+        }
+
         self.showKids = function(parent, index, e) {
           var par = $(e.currentTarget)
           $(e.target).parent().siblings().find('.btn').removeClass('selected')
           par.addClass('selected');
           parent.selected = true;
+          editholder.hide();
 
           if (kidElem[index]) {
             childholder.children().hide();
@@ -51,9 +61,12 @@ angular.module('frontsApp')
                 }
               })
               kidElem[index] = el;
-              $("html, body").animate({
-                scrollTop: $(document).height()
-              }, 500);
+              // setTimeout(function(){
+              //   $("html, body").stop().animate({
+              //     scrollTop: $(document).height()
+              //   }, 500);
+              // }, 1000)
+
             })
           }
         };
