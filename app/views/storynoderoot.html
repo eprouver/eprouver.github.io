@@ -1,0 +1,20 @@
+<div>
+    <div class="btn btn-block btn-sm btn-reader">
+      <h2> Page Title </h2>
+      <div>
+        <p>Lorem ipsum etc.</p>
+      </div>
+      <p class="center">&hellip;</p>
+    </div>
+    <div class="row center options-holder">
+      <div ng-class="'col-xs-' + colClass(kids.length < 4? kids.length+1: kids.length)" ng-repeat="bb in kids">
+        <div class="down-branch btn btn-option btn-block" ng-click="ntpCtrl.showKids(bb, $index, $event)">Option</div>
+      </div>
+      <div class="center" ng-class="'col-xs-' + colClass(kids.length+1)" ng-if="kids.length < 4">
+        <div class="down-branch btn btn-add">
+          <span class="glyphicon glyphicon-plus"></span>
+        </div>
+      </div>
+    </div>
+    <div class="childholder"></div>
+</div>

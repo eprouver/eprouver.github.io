@@ -29,6 +29,11 @@ angular
         controller: 'BeesCtrl',
         controllerAs: 'bees'
       })
+      .when('/story', {
+        templateUrl: 'views/story.html',
+        controller: 'StoryCtrl',
+        controllerAs: 'story'
+      })
       .otherwise({
         redirectTo: '/'
       });
