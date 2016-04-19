@@ -18,8 +18,8 @@ angular.module('frontsApp')
         var childholder = $element.find('.childholder');
         var kidElem = [];
 
-        $scope.$watch('kids', function(n){
-          if(typeof n == "string"){
+        $scope.$watch('kids', function(n) {
+          if (typeof n == "string") {
             $scope.kids = JSON.parse($scope.kids);
           };
 
@@ -32,8 +32,10 @@ angular.module('frontsApp')
 
         self.showKids = function(parent, index, e) {
           var par = $(e.currentTarget)
-        $(e.target).parent().siblings().find('.btn').removeClass('selected')
+          $(e.target).parent().siblings().find('.btn').removeClass('selected')
           par.addClass('selected');
+          parent.selected = true;
+
           if (kidElem[index]) {
             childholder.children().hide();
             kidElem[index].show();
@@ -42,9 +44,16 @@ angular.module('frontsApp')
               childholder.children().hide();
               childholder.append(el);
               scope.parent = parent;
-              scope.kids = [0,1,2,3,4].slice(0, ~~(Math.random() * 3) + 2);
+              scope.kids = [0, 1, 2, 3, 4].slice(0, ~~(Math.random() * 5)).map(function(v){
+                return {
+                  data: v,
+                  selected: false
+                }
+              })
               kidElem[index] = el;
-              $("html, body").animate({scrollTop: $(document).height()}, 500);
+              $("html, body").animate({
+                scrollTop: $(document).height()
+              }, 500);
             })
           }
         };
