@@ -30,9 +30,10 @@
 
       if (beesConfig.usePixi) {
         var textures = {
-          flowers: PIXI.Texture.fromImage("images/space/ast.png"),
-          bees: PIXI.Texture.fromImage("images/space/ship.png", true),
-          hives: PIXI.Texture.fromImage("images/space/station.png", true)
+          flowers: PIXI.Texture.fromImage("images/space/ast2.png"),
+          drone: PIXI.Texture.fromImage("images/space/ship.png", true),
+          soldier: PIXI.Texture.fromImage("images/space/soldier.png", true),
+          hives: PIXI.Texture.fromImage("images/space/station3.png", true)
             // bees: PIXI.Texture.fromImage("images/flat/drone_1.png"),
             // hives: PIXI.Texture.fromImage("images/flat/drone_2.png")
         }
@@ -62,7 +63,8 @@
           v.sprite.anchor.y = 0.5;
           stage.addChild(v.sprite);
         }
-
+      
+        v.sprite.tint = d3.interpolateNumber(v.sprite.tint, parseInt(self.colors(v.team).slice(1), 16))(0.75);
         v.sprite.position.x = v.x;
         v.sprite.position.y = v.y;
         v.sprite.rotation = v.rotate || 0;
@@ -71,11 +73,11 @@
       function update(time) {
         var delta = (time || 0) - prevTime;
         prevTime = time;
-        beesServ.update(delta / (Math.pow(self.zoomer, 1.2))).then(function() {
+        beesServ.update(delta).then(function() {
 
           beesServ.flowers.forEach(function(v) {
             v = updateFields.apply(self, [v, 'flowers']);
-            if (beesConfig.usePixi) {
+            if (beesConfig.usePixi && v) {
               updateSprite(v, 'flowers');
             }
           });
@@ -84,7 +86,7 @@
           beesServ.bees.forEach(function(v) {
             v = updateFields.apply(self, [v, 'bees']);
             if (beesConfig.usePixi) {
-              updateSprite(v, 'bees');
+              updateSprite(v, v? v.type: '');
             }
 
           })
@@ -92,7 +94,8 @@
 
           beesServ.hives.forEach(function(v) {
             v = updateFields.apply(self, [v, 'hives']);
-            if (beesConfig.usePixi) {
+            if (beesConfig.usePixi && v) {
+              v.rotate = (v.rotate || 0) + (0.0001 * delta);
               updateSprite(v, 'hives');
             }
           })

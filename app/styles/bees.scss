@@ -12,6 +12,10 @@
       display:none;
     }
   }
+  
+  #territory{
+    opacity:0.25;
+  }
 
   //background:black;
   #scroller {
@@ -100,14 +104,13 @@
         border-radius: 10em;
       }
       p {
-        color: white;
-        font-weight: bold;
+        color: yellow;
         position: absolute;
         width: 86%;
         text-align: center;
         left: 0;
         bottom: -13px;
-        background: #191919;
+        background: rgba(0,0,0,0.5);
         border-radius: 1em;
         font-size: 11px;
         margin: 0 8%;
@@ -142,7 +145,7 @@
         border-radius: 10em;
       }
       &.soldier {
-        box-shadow: 0 0 0 4px red;
+        //box-shadow: 0 0 0 4px red;
         border-radius: 10em;
       }
     }

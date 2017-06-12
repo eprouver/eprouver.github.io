@@ -1,5 +1,5 @@
 (function(module) {
-  var testingtime = 0.5;
+  var testingtime = 0.75;
 
   var worker = new Worker('scripts/workers/bees.js');
   //AABB testing
@@ -39,31 +39,32 @@
   module.service('beesConfig', function() {
     return {
       player: -1,
-      players: 3,
-      height: 800,
-      width: 800,
+      players: 10,
+      height: window.innerHeight,
+      width: window.innerWidth,
       flowers: 15,
       scarcity: 1000,
       precision: 1,
+      hiveLust: 0.48,
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
-      usePixi: false,
+      usePixi: true,
       speeds: {
         drone: 0.3 * testingtime,
-        soldier: 0.4 * testingtime
+        soldier: 0.1 * testingtime
       },
       cost: {
-        drone: 100,
-        soldier: 800
+        drone: 500,
+        soldier: 2000
       },
       minpollen: 30,
       maxpollen: 150,
-      maxtravel: 0.2,
-      dronePercentage: 1,
+      maxtravel: 0.05,
+      dronePercentage: 0.6,
       life: {
         drone: 10,
-        hive: 100,
-        soldier: 50
+        hive: 300,
+        soldier: 100
       },
       damage: {
         drone: 0.05 * testingtime,
@@ -74,18 +75,20 @@
       bee: {
         height: 50,
         width: 50,
-        repair: 0.001 * testingtime
+        repair: 0.01 * testingtime,
+        idle: 500
       },
       hive: {
         height: 60,
         width: 60,
         repair: 0.003,
-        cost: 0.0005 * testingtime
+        cost: 0.005 * testingtime,
+        upkeepDamage: 0.05
       },
       flower: {
-        height: 30,
-        width: 30,
-        regrow: 0.01 * testingtime
+        height: 20,
+        width: 20,
+        regrow: 0.001 * testingtime
       },
       intrudercheck: 10,
       startPollen: {
@@ -148,6 +151,8 @@
           pollen: beesConfig.startPollen.flower,
           life: 1
         });
+        
+        setTimeout(self.updateFlowers, 200);
       }
 
       self.createBee = function(team, home, type, x, y, pollen) {
@@ -226,10 +231,13 @@
           self.createFlower('flower');
         };
 
-        //Update the location of each flower (which territory is it in?)
-        self.flowers.forEach(function(f) {
-          f.team = self.territories.findTerritory(f.x, f.y);
-        });
+        setTimeout(function(){
+          //Update the location of each flower (which territory is it in?)
+          _(self.flowers).each(function(f) {
+            f.team = self.territories.findTerritory(f.x, f.y);
+          });         
+        }, 200)
+
       };
 
       var lastTimestamp = 0;
@@ -237,8 +245,16 @@
 
       var gohomebee = function(b) {
         b.goal = undefined;
-        b.dx = b.home.x;
-        b.dy = b.home.y;
+        if(b.home.life <= 0){
+          b.home = self.teams[b.team].hives[0];
+        }
+        if(b.home){
+          b.dx = b.home.x;
+          b.dy = b.home.y;          
+        }else{
+          b.life = -1;
+        }
+        
         return;
       }
 
@@ -286,11 +302,11 @@
         }
 
         //Should Hives send out more bees?
-        self.hives.filter(function(h) {
+        _.chain(self.hives).filter(function(h) {
           return h.team != beesConfig.player;
         }).filter(function(h) {
           return h.costs <= 0;
-        }).forEach(function(h) {
+        }).each(function(h) {
           var team = self.teams[h.team];
 
           //If there aren't enough soldiers, make one first
@@ -320,7 +336,7 @@
         }
 
         if (checkingIntruders) {
-          self.teams.forEach(function(t) {
+          _(self.teams).forEach(function(t) {
             if (t.intruders.length > 0) {
               var filtered = t.intruders
                 .map(function(i) {
@@ -339,8 +355,8 @@
           });
         }
 
-        self.bees
-          .forEach(function(b) {
+        _(self.bees)
+          .each(function(b) {
 
             if (checkingIntruders) {
               var terr = self.territories.findTerritory(b.x, b.y);
@@ -375,6 +391,7 @@
 
             //Move the bee
             if (Math.abs(b.x - b.dx) > beesConfig.precision || Math.abs(b.y - b.dy) > beesConfig.precision) {
+              b.idle = 0;
               var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
               var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1));
               var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1));
@@ -387,16 +404,26 @@
                 b.x = b.dx;
                 b.y = b.dy;
               }
+              
             } else {
+              b.idle = (b.idle || 0) + (1 * delta);
+              
+              if(b.idle > beesConfig.bee.idle){
+                gohomebee(b);
+                return;
+              }
+              
               if (b.goal == 'takeLand') {
                 if (self.createHive(b.team, b.x, b.y, b.pollen / 2)) {
                   b.life = -1;
                   b.goal = undefined;
+                }else{
+                  gohomebee(b);
                 }
 
                 return;
               } else if (b.goal == 'buildHive') {
-                if (self.teams[b.team].drones > 3) {
+                if (self.teams[b.team].drones >= (self.teams[b.team].hives / beesConfig.hiveLust)) {
                   //if this bee intersects any other hives -> go home
                   if (self.hives.filter(function(h) {
                       return h.team == b.team;
@@ -410,7 +437,7 @@
                   if (self.createHive(b.team, b.x, b.y, b.pollen / 2)) {
                     b.life = -1;
                   }
-
+                  gohomebee(b);
                   return;
                 } else {
                   gohomebee(b);
@@ -467,16 +494,16 @@
         defer = $q.defer();
 
         //Remove dead stuff
-        self.bees = self.bees.filter(checklife);
-        self.hives = self.hives.filter(checklife);
-        self.flowers = self.flowers.filter(checklife);
+        self.bees = _(self.bees).filter(checklife);
+        self.hives = _(self.hives).filter(checklife);
+        self.flowers = _(self.flowers).filter(checklife);
 
         //update moving targets
-        self.bees.filter(function(b){
+        _.chain(self.bees).filter(function(b){
           return b.type == 'soldier';
         }).filter(function(b){
           return b.target && b.target.type;
-        }).forEach(function(b){
+        }).each(function(b){
           if(b.target.type == 'hive'){
             b.target = _(self.hives).find({id: b.target.id});
           }else{
@@ -508,7 +535,6 @@
           console.error(e);
           return $q.reject();
         }
-
 
         worker.postMessage(transfer);
 

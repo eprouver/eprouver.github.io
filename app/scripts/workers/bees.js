@@ -1,3 +1,4 @@
+
 self.addEventListener('message', function(e) {
   var beesData = JSON.parse(e.data);
 
@@ -204,7 +205,7 @@ self.addEventListener('message', function(e) {
     //else subtract a little pollen
     if (h1.pollen <= 0) {
       h1.pollen = 0;
-      h1.life -= (beesConfig.hive.repair + beesConfig.hive.cost) * delta;
+      h1.life -= (beesConfig.hive.upkeepDamage) * delta;
     } else {
       h1.pollen -= beesConfig.hive.cost * delta;
     }
