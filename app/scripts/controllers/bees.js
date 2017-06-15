@@ -65,8 +65,8 @@
         }
 
         v.sprite.tint = d3.interpolateNumber(v.sprite.tint, parseInt(self.colors(v.team).slice(1), 16))(0.75);
-        v.sprite.position.x = v.x;
-        v.sprite.position.y = v.y;
+        v.sprite.position.x = v.x + 100;
+        v.sprite.position.y = v.y + 100;
         v.currentRotation = d3.interpolateNumber(v.currentRotation || 0, v.rotate || 0)(0.25);
         v.sprite.rotation = v.currentRotation;
       }
@@ -118,7 +118,7 @@
         beesServ.reset();
 
         if (beesConfig.usePixi) {
-          renderer = new PIXI.WebGLRenderer(beesConfig.width, beesConfig.height);
+          renderer = new PIXI.WebGLRenderer(beesConfig.width + 200, beesConfig.height + 200);
           stage = new PIXI.Container();
           renderer.backgroundColor = 0x000000;
           $('#bees .board-holder').append(renderer.view);

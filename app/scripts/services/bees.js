@@ -151,7 +151,7 @@
           pollen: beesConfig.startPollen.flower,
           life: 1
         });
-        
+
         setTimeout(self.updateFlowers, 200);
       }
 
@@ -235,7 +235,7 @@
           //Update the location of each flower (which territory is it in?)
           _(self.flowers).each(function(f) {
             f.team = self.territories.findTerritory(f.x, f.y);
-          });         
+          });
         }, 200)
 
       };
@@ -245,16 +245,21 @@
 
       var gohomebee = function(b) {
         b.goal = undefined;
-        if(b.home.life <= 0){
-          b.home = self.teams[b.team].hives[0];
+
+        //if(!b.home){
+          b.home = self.hives.filter(function(h){ return h.team == b.team }).sort(function(f,s){
+            return distance(b.x,b.y,f.x,f.y) - distance(b.x,b.y,s.x,s.y)
+          })[0];
+        //}
+
+        if(!b.home){
+          b.goal = 'buildHive';
+          return;
         }
-        if(b.home){
-          b.dx = b.home.x;
-          b.dy = b.home.y;          
-        }else{
-          b.life = -1;
-        }
-        
+
+        b.dx = b.home.x;
+        b.dy = b.home.y;
+
         return;
       }
 
@@ -404,15 +409,15 @@
                 b.x = b.dx;
                 b.y = b.dy;
               }
-              
+
             } else {
               b.idle = (b.idle || 0) + (1 * delta);
-              
+
               if(b.idle > beesConfig.bee.idle){
                 gohomebee(b);
                 return;
               }
-              
+
               if (b.goal == 'takeLand') {
                 if (self.createHive(b.team, b.x, b.y, b.pollen / 2)) {
                   b.life = -1;

@@ -6,16 +6,17 @@
   top: 0;
   left: 0;
   padding: 10vmin;
+  background:black;
 
   &.pixi{
     .icon{
       display:none;
     }
   }
-  
-  #territory{
-    opacity:0.25;
-    filter: url(#filtersPicture);
+
+  #territory-holder{
+    opacity:0.35;
+    filter: url(#borders);
   }
 
   //background:black;
@@ -26,7 +27,8 @@
   }
   .board-holder {
     position: relative;
-
+    margin-top: -100px;
+    margin-left: -100px;
     //background: url(../images/grass.jpg);
   }
   svg.board {
@@ -168,7 +170,8 @@
     stroke: black;
     stroke-width: 5px;
     opacity: 1;
-    
+    stroke-linecap: round;
+
   }
 }
 
