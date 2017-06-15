@@ -34,11 +34,8 @@
           drone: PIXI.Texture.fromImage("images/space/ship.png", true),
           soldier: PIXI.Texture.fromImage("images/space/soldier.png", true),
           hives: PIXI.Texture.fromImage("images/space/station3.png", true)
-            // bees: PIXI.Texture.fromImage("images/flat/drone_1.png"),
-            // hives: PIXI.Texture.fromImage("images/flat/drone_2.png")
         }
       }
-
 
       function checklife(b) {
 
@@ -61,13 +58,17 @@
           v.sprite = new PIXI.Sprite(textures[texture]);
           v.sprite.anchor.x = 0.5;
           v.sprite.anchor.y = 0.5;
+          /* var filter = new PIXI.filters.PixelateFilter();
+          filter.size = new PIXI.Point(10, 10);
+          v.sprite.filters = [filter]; */
           stage.addChild(v.sprite);
         }
-      
+
         v.sprite.tint = d3.interpolateNumber(v.sprite.tint, parseInt(self.colors(v.team).slice(1), 16))(0.75);
         v.sprite.position.x = v.x;
         v.sprite.position.y = v.y;
-        v.sprite.rotation = v.rotate || 0;
+        v.currentRotation = d3.interpolateNumber(v.currentRotation || 0, v.rotate || 0)(0.25);
+        v.sprite.rotation = v.currentRotation;
       }
 
       function update(time) {
@@ -167,6 +168,13 @@
         }, 100)
 
         $timeout(update)
+
+        $timeout(function perCheck(){
+
+          beesServ.updateFlowers();
+          $timeout(perCheck, 2000);
+
+        },2000);
       }
 
       self.boardSize = function(n) {
@@ -306,7 +314,7 @@
           };
         }));
         beesServ.territories.redraw();
-        beesServ.updateFlowers();
+        setTimeout(beesServ.updateFlowers, 500);
       });
 
       self.init();

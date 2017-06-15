@@ -28,6 +28,9 @@ angular.module('frontsApp')
     }
 
     function redraw(x, y, team) {
+      
+      var borders = [];
+
       path = path
         .data(voronoi(vertices.map(function(v) {
           return v.loc;
@@ -35,9 +38,6 @@ angular.module('frontsApp')
 
       path.exit().remove();
       path.enter().append("path")
-        .attr("class", function(d, i) {
-          return "q" + (i % 9) + "-9";
-        })
         .attr('fill', function(d, i) {
           return vertices[i].fill;
         })
@@ -45,6 +45,57 @@ angular.module('frontsApp')
           return vertices[i].fill;
         })
         .attr("d", polygon)
+        .each(function(d, i){
+          d.team = vertices[i];
+          borders.push(d);
+        })
+      
+      var sharedPath = [];
+      
+      _.chain(borders).map(function(b){
+        for(var i = 0; i < b.length; i++){
+          b[i][0] = ~~b[i][0];
+          b[i][1] = ~~b[i][1];
+        }
+        
+        return b;
+      })
+      .forEach(function(b, i, arr){
+        var others = arr.filter(function(t){ return t.team.team !== b.team.team; });
+        var now, next, path;
+        
+        //check all the path segements
+        for(var i = 0; i < b.length -1; i++){
+          now = b[i].join(',');
+          next = b[i+1].join(',');
+          
+          for(var o = 0; o < others.length; o++){
+            path = _.flatten(others[o]).join(',');
+            if(path.indexOf(now) > -1 && path.indexOf(next) > -1){
+              sharedPath.push([b[i], b[i+1]])
+            }
+          }
+        }
+        //Check the closing path segment
+        for(var o = 0; o < others.length; o++){
+            path = _.flatten(others[o]).join(',');
+            now = b[b.length -1].join(',');
+            next = b[0].join(',');
+            if(path.indexOf(now) > -1 && path.indexOf(next) > -1){
+              sharedPath.push([b[b.length -1], b[0]])
+            }
+          }
+      })
+      
+      var lineGenerator = d3.svg.line();
+      svg.select('.o-path').remove();
+      var oPath = svg.append("g")
+        .attr('class', 'o-path');
+      
+      sharedPath.forEach(function(d){
+        oPath.append('path')
+        .attr('d', lineGenerator(d));
+      })
 
       path.order();
     }

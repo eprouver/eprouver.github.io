@@ -185,16 +185,14 @@ self.addEventListener('message', function(e) {
   /*  Check Collision Starts Here  */
 
   //if a hive is over a flower, kill the flower
-  beesData.flowers = beesData.flowers.filter(function(f) {
+  beesData.flowers.forEach(function(f) {
     if (beesData.hives.filter(function(h) {
         return compare(f, h)
       }).length > 0) {
       f.life = -1;
-      return false;
     }
-
-    return true;
   });
+  
 
   beesData.hives.forEach(function(h1) {
     if (h1.life < beesConfig.life.hive) {

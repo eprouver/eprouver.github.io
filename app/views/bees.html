@@ -1,11 +1,11 @@
 <div id="bees" ng-class="{pixi: bees.usePixi}">
-  <div class="list-group" style="position:fixed; top: 0; left: 0" ng-if="false">
-    <div class="list-group-item" ng-repeat="team in bees.bees | filter:{type: 'soldier'}">
-      {{team.x == team.dx}}: {{team.y == team.dy}} || {{target == undefined}}
-    </div>
-  </div>
+  <svg>
+    <defs>
+      <filter id="filtersPicture"><feComposite operator="arithmetic" k1="0" k2="1" k3="0" k4="0" in="SourceGraphic" in2="SourceGraphic" result="inputTo_1"></feComposite><feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="turbulence_1" data-filterId="1"></feTurbulence><feDisplacementMap xChannelSelector="R" yChannelSelector="G" in="inputTo_1" in2="turbulence_1" id="filter_1" scale="70" data-filterId="1"></feDisplacementMap></filter>
+    </defs>
+  </svg>
 
-  <div id="scroller">
+  <div id="scroller" ng-dblclick="showMe = !showMe">
     <div ng-style="bees.boardSize(bees.scaler)">
       <div style="transform: scale({{bees.scaler}}); transform-origin: 0 0">
         <div class="board board-holder"></div>
@@ -18,7 +18,7 @@
             </filter>
           </defs>
         </svg>
-        <div class="board selecting-board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee}" ng-click="bees.boardClicked($event)">
+        <div class="board selecting-board" ng-style="bees.boardSize()" ng-class="{'no-touch': bees.selectedBee, 'hide': !showMe}" ng-click="bees.boardClicked($event)">
           <div class="flower" ng-repeat="f in bees.flowers" ng-class="b.type" ng-style="{ left: f.x, top: f.y, height: f.h, width: f.w, marginTop: -f.h/2, marginLeft: -f.w/2}">
             <div class="icon"></div>
           </div>
