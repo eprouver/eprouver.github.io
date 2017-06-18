@@ -54,16 +54,16 @@
         soldier: 0.1 * testingtime
       },
       cost: {
-        drone: 500,
+        drone: 100,
         soldier: 2000
       },
       minpollen: 30,
-      maxpollen: 150,
+      maxpollen: 170,
       maxtravel: 0.05,
       dronePercentage: 0.6,
       life: {
-        drone: 10,
-        hive: 300,
+        drone: 6,
+        hive: 400,
         soldier: 100
       },
       damage: {
@@ -75,13 +75,13 @@
       bee: {
         height: 50,
         width: 50,
-        repair: 0.01 * testingtime,
+        repair: 0.001 * testingtime,
         idle: 500
       },
       hive: {
         height: 60,
         width: 60,
-        repair: 0.003,
+        repair: 0.005,
         cost: 0.005 * testingtime,
         upkeepDamage: 0.05
       },
@@ -143,8 +143,8 @@
       self.createFlower = function(type) {
         self.flowers.push({
           id: _.uniqueId(),
-          x: random() * beesConfig.width,
-          y: random() * beesConfig.height,
+          x: ~~(random() * beesConfig.width),
+          y: ~~(random() * beesConfig.height),
           h: beesConfig.flower.height,
           w: beesConfig.flower.width,
           type: type,
@@ -253,9 +253,15 @@
         //}
 
         if(!b.home){
-          b.goal = 'buildHive';
+          if(b.pollen > beesConfig.cost.drone * 1.1){
+            b.goal = 'buildHive';
+          }else{
+            b.target = undefined;
+            b.goal = undefined;
+          }
           return;
         }
+
 
         b.dx = b.home.x;
         b.dy = b.home.y;
@@ -314,9 +320,15 @@
         }).each(function(h) {
           var team = self.teams[h.team];
 
+          if(team.drones < team.hives && h.pollen > beesConfig.cost.drone){
+              self.createBee(h.team, h, 'drone', h.x, h.y);
+              h.costs += beesConfig.cost.drone;
+              return;
+          }
+
           //If there aren't enough soldiers, make one first
           //else make a drone if you can offordone
-          if (team.soldiers < (team.drones * beesConfig.dronePercentage) && team.drones > team.hives) {
+          else if (team.soldiers < (team.drones * beesConfig.dronePercentage)) {
             if (h.pollen > beesConfig.cost.soldier) {
               self.createBee(h.team, h, 'soldier', h.x, h.y);
               h.costs += beesConfig.cost.soldier;
@@ -469,7 +481,6 @@
             if (!depth) {
               transfer[i] = removeSprite(v[i], 1);
             }
-
             continue;
           }
 

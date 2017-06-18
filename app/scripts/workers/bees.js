@@ -163,11 +163,10 @@ self.addEventListener('message', function(e) {
           //My target left my territory
           b.dx = b.x;
           b.dy = b.y;
-          console.log('not an intruder');
           b.target = undefined;
           gohomebee(b);
           return;
-        }else{        
+        }else{
           b.dx = b.target.x;
           b.dy = b.target.y;
         }
@@ -192,7 +191,7 @@ self.addEventListener('message', function(e) {
       f.life = -1;
     }
   });
-  
+
 
   beesData.hives.forEach(function(h1) {
     if (h1.life < beesConfig.life.hive) {
@@ -266,16 +265,18 @@ self.addEventListener('message', function(e) {
     }
   }
 
+  var heal = function(b){
+    //heal yourbeesData
+    if (b.life < beesConfig.life[b.type]) {
+      b.life += beesConfig.bee.repair * delta * beesConfig.life[b.type];
+    }
+  }
+
   //drone collisions
   beesData.bees.filter(checklife).forEach(function(b) {
+
     switch (b.type) {
       case 'drone':
-
-        //heal yourbeesData
-        if (b.life < beesConfig.life.drone) {
-          b.life += beesConfig.bee.repair * delta;
-        }
-
         if (b.goal != 'user') {
 
           if (b.target) {
@@ -296,6 +297,8 @@ self.addEventListener('message', function(e) {
         }).forEach(function(h) {
           //if drone hits home update home
           if (compare(b, h)) {
+            heal(b);
+
             if (h != b.home) {
               b.home = h;
             };
@@ -408,10 +411,14 @@ self.addEventListener('message', function(e) {
         })
 
         //If fighting a hive?
-        beesData.hives.filter(checklife).filter(function(ob) {
-          //and their on another team
-          return ob.team !== b.team;
-        }).forEach(function(ob) {
+        beesData.hives.filter(checklife).forEach(function(ob) {
+          if(b.team == ob.team){
+            if(distance(b.x, b.y, ob.x, ob.y) < 5){
+              heal(b);
+            }
+            return;
+          }
+
           if (compare(b, ob)) {
             //Fight
             if (Math.random() > 0.5) {

@@ -72,7 +72,7 @@
       }
 
       function update(time) {
-        var delta = (time || 0) - prevTime;
+        var delta = ~~((time || 0) - prevTime);
         prevTime = time;
         beesServ.update(delta).then(function() {
 
@@ -140,17 +140,14 @@
         self.flowers = beesServ.flowers;
 
         $timeout(function() {
-          self.scaler = 1; //(1 / beesConfig.width) * window.innerWidth * 0.85;
+          self.scaler = 0.9; //(1 / beesConfig.width) * window.innerWidth * 0.85;
 
           var iscroll = new IScroll('#scroller', {
             scrollX: true,
             freeScroll: true,
             zoom: true,
             mouseWheel: true,
-            wheelAction: 'zoom',
-            zoomMin: 0.001,
-            zoomStart: 5,
-            zoomMax: 20
+            wheelAction: 'zoom'
           });
 
           self.zoomer = self.scaler;
