@@ -49,7 +49,7 @@
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
       usePixi: true,
-      beeTheme: false,
+      beeTheme: true,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.1 * testingtime
@@ -423,8 +423,10 @@
             //Move the bee
             if (Math.abs(b.x - b.dx) > beesConfig.precision || Math.abs(b.y - b.dy) > beesConfig.precision) {
               b.idle = 0;
-              var turning =   (2 * Math.PI - Math.abs((b.rotate || 0) - (b.currentRotation || 0))) / (2 * Math.PI);
-              turning = Math.pow(turning, 5)
+              // var turning =  1 - Math.abs(Math.cos(b.currentRotation) * Math.sin(b.rotate) - Math.cos(b.rotate) * Math.sin(b.currentRotation)) ;
+              var turning =  (2 * Math.PI - Math.abs((b.rotate || 0) - (b.currentRotation || 0))) / (2 * Math.PI);
+              turning = Math.pow(turning, 5);
+
               var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y)) ;
               var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;
               var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;

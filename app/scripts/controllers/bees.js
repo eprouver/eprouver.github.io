@@ -79,11 +79,12 @@
             case "soldier":
             case "drone":
               beesContainer.addChild(v.sprite);
+              v.currentRotation = v.rotate;
               break;
             case "hive":
-              if(!beesConfig.beeTheme){
+              if (!beesConfig.beeTheme) {
                 v.currentRotation = -10;
-              }else{
+              } else {
                 v.currentRotation = v.rotate;
               }
               hivesContainer.addChild(v.sprite);
@@ -107,12 +108,12 @@
           v.sprite.scale.y = v.targetScale;
         }
 
-        if(v.transitionTime !=  null){
+        if (v.transitionTime != null) {
           v.transitionTime = (v.transitionTime || 0) + delta;
-          if(v.transitionTime < 1000){
+          if (v.transitionTime < 1000) {
             //v.sprite.tint = d3.interpolateNumber(v.sprite.tint, parseInt(self.colors(v.team).slice(1), 16))(0.75);
             v.sprite.tint = parseInt(d3.interpolateRgb('#' + v.sprite.tint.toString(16), self.colors(v.team))(v.transitionTime / 950).slice(1), 16);
-          }else{
+          } else {
             v.sprite.tint = parseInt(self.colors(v.team).slice(1), 16);
             v.transitionTime = null;
           }
@@ -120,9 +121,32 @@
 
         v.sprite.position.x = v.x + 100;
         v.sprite.position.y = v.y + 100;
+
+
+        // if(v.rotate != undefined && v.currentRotation != undefined){
+        //   var target = Math.abs(v.rotate - v.currentRotation);
+        //
+        //   if(target > 0){
+        //     var direction = Math.cos(v.currentRotation) * Math.sin(v.rotate) - Math.cos(v.rotate) * Math.sin(v.currentRotation);
+        //     if (direction > 0) {
+        //       //clockwise
+        //       v.currentRotation = v.currentRotation + Math.abs(v.currentRotation / v.rotate) * 0.01 * delta;
+        //
+        //     } else {
+        //       //counterclockwise
+        //       v.currentRotation = v.currentRotation - Math.abs(v.currentRotation / v.rotate) * 0.01 * delta;
+        //     }
+        //   }
+        //
+        //   if(target < 0.01){
+        //     v.currentRotation = v.rotate;
+        //   }
+        //
+        //           v.sprite.rotation = v.currentRotation;
+        // }
+
         v.currentRotation = d3.interpolateNumber(v.currentRotation || 0, v.rotate || 0)(0.0025 * delta);
         v.sprite.rotation = v.currentRotation;
-
       }
 
 
@@ -168,7 +192,7 @@
           beesServ.hives.forEach(function(v) {
             v = updateFields.apply(self, [v, 'hives']);
             if (beesConfig.usePixi && v) {
-              if(!beesConfig.beeTheme){
+              if (!beesConfig.beeTheme) {
                 v.rotate = (v.rotate || 0) + (0.0001 * delta);
               }
               updateSprite(v, 'hives', delta);
