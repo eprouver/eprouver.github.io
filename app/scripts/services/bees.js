@@ -1,5 +1,5 @@
 (function(module) {
-  var testingtime = 0.75;
+  var testingtime = 1;
 
   var worker = new Worker('scripts/workers/bees.js');
   //AABB testing
@@ -49,6 +49,7 @@
       colors: d3.scale.category10().domain(d3.range(10)),
       pollenRate: 1 * testingtime,
       usePixi: true,
+      beeTheme: false,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.1 * testingtime
@@ -149,7 +150,10 @@
           w: beesConfig.flower.width,
           type: type,
           pollen: beesConfig.startPollen.flower,
-          life: 1
+          life: 1,
+          targetScale: beesConfig.beeTheme ? 2: 1,
+          transitionTime: 0,
+          team: -1
         });
 
         setTimeout(self.updateFlowers, 200);
@@ -171,7 +175,9 @@
           life: beesConfig.life[type],
           maxLife: beesConfig.life[type],
           pollen: pollen || 0,
-          maxPollen: beesConfig.maxpollen
+          maxPollen: beesConfig.maxpollen,
+          targetScale: 1,
+          transitionTime: 0
         }
 
         self.bees.push(bee);
@@ -205,7 +211,10 @@
           maxLife: beesConfig.life.hive,
           pollen: pollen || 0,
           type: 'hive',
-          costs: 0
+          costs: 0,
+          targetScale: 1,
+          rotate: ~~(Math.random()* Math.PI * 2),
+          transitionTime: 0
         };
 
         self.hives.push(hive);
@@ -234,7 +243,12 @@
         setTimeout(function(){
           //Update the location of each flower (which territory is it in?)
           _(self.flowers).each(function(f) {
-            f.team = self.territories.findTerritory(f.x, f.y);
+            var team = self.territories.findTerritory(f.x, f.y);
+
+            if(team != f.team){
+              f.team = team;
+              f.transitionTime = 0;
+            }
           });
         }, 200)
 
@@ -253,7 +267,7 @@
         //}
 
         if(!b.home){
-          if(b.pollen > beesConfig.cost.drone * 1.1){
+          if(b.pollen > beesConfig.cost.drone){
             b.goal = 'buildHive';
           }else{
             b.target = undefined;
@@ -409,9 +423,11 @@
             //Move the bee
             if (Math.abs(b.x - b.dx) > beesConfig.precision || Math.abs(b.y - b.dy) > beesConfig.precision) {
               b.idle = 0;
-              var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
-              var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1));
-              var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1));
+              var turning =   (2 * Math.PI - Math.abs((b.rotate || 0) - (b.currentRotation || 0))) / (2 * Math.PI);
+              turning = Math.pow(turning, 5)
+              var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y)) ;
+              var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;
+              var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;
 
               //Clamp the travel to prevent overshoot
               if (distance(b.x, b.y, b.dx, b.dy) > distance(newX, newY, b.dx, b.dy)) {
