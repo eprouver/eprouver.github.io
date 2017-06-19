@@ -1,7 +1,7 @@
 (function(module) {
   var testingtime = 1;
 
-  var worker = new Worker('scripts/workers/bees.js');
+  var worker = new Worker('workers/bees.js');
   //AABB testing
   module.factory('compare', function() {
     return function compare(a, b) {
@@ -46,7 +46,8 @@
       scarcity: 300,
       precision: 1,
       hiveLust: 0.58,
-      colors: d3.scale.category10().domain(d3.range(10)),
+      //colors: d3.scale.category10().domain(d3.range(10)),
+      colors: d3.scale.ordinal().domain(d3.range(10)).range(["#f44336", "#e91e63", "#673ab7", "#2196f3", "#10bcd4", "#4caf50", "#C6FF00", "#ffeb3b", "#ff9800", "#795548", "#9e9e9e", "#607d8b"].sort(function(){ return Math.random() - 0.5})),
       pollenRate: 1 * testingtime,
       usePixi: true,
       beeTheme: true,
@@ -245,9 +246,9 @@
           _(self.flowers).each(function(f) {
             var team = self.territories.findTerritory(f.x, f.y);
 
-            if(team != f.team){
+            if(team !== undefined && team != f.team){
               f.team = team;
-              f.transitionTime = 0;
+              f.transitionTime = 1;
             }
           });
         }, 200)

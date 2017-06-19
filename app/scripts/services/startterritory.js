@@ -105,7 +105,7 @@ angular.module('frontsApp')
           // stroke-linecap: round;
           oPath.append('path')
             .attr('stroke', (beesConfig.beeTheme ? '#222' : 'black'))
-            .attr('stroke-width', (beesConfig.beeTheme ? 5 : 40))
+            .attr('stroke-width', (beesConfig.beeTheme ? 3 : 50))
             .attr('stroke-linecap', 'round')
             .attr('d', lineGenerator(d));
         })
