@@ -38,9 +38,9 @@
 
   module.service('beesConfig', function() {
     return {
-      player: -1,
-      players: 10,
-      height: window.innerHeight,
+      player: 1,
+      players: 3,
+      height: window.innerWidth,
       width: window.innerWidth,
       flowers: 15,
       scarcity: 300,
@@ -50,7 +50,7 @@
       colors: d3.scale.ordinal().domain(d3.range(10)).range(["#f44336", "#e91e63", "#673ab7", "#2196f3", "#10bcd4", "#4caf50", "#C6FF00", "#ffeb3b", "#ff9800", "#795548", "#9e9e9e", "#607d8b"].sort(function(){ return Math.random() - 0.5})),
       pollenRate: 1 * testingtime,
       usePixi: true,
-      beeTheme: true,
+      beeTheme: false,
       speeds: {
         drone: 0.3 * testingtime,
         soldier: 0.1 * testingtime

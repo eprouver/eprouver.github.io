@@ -16,39 +16,8 @@
       $timeout, beesConfig, compare, updateFields) {
       var self = this;
       var prevTime = 0;
-      var renderer;
-      var stage;
-      var beesContainer, hivesContainer, flowersContainer;
-      var bkg;
+      var renderer, stage, beesContainer, hivesContainer, flowersContainer, bkg, textures;
 
-      self.cost = {};
-      self.player = -1;
-      self.bees = [];
-      self.hives = [];
-      self.flowers = [];
-      self.colors = beesConfig.colors;
-      beesServ.territories = startTerritory(beesConfig.width, beesConfig.height);
-      self.usePixi = beesConfig.usePixi;
-
-      if (beesConfig.usePixi) {
-        if (beesConfig.beeTheme) {
-          var textures = {
-            flowers: PIXI.Texture.fromImage("images/bees2/flower.png"),
-            drone: PIXI.Texture.fromImage("images/bees2/drone.png", true),
-            soldier: PIXI.Texture.fromImage("images/bees2/soldier.png", true),
-            hives: PIXI.Texture.fromImage("images/bees2/hive.png", true)
-          }
-        } else {
-          var textures = {
-            flowers: PIXI.Texture.fromImage("images/space/ast2.png"),
-            drone: PIXI.Texture.fromImage("images/space/ship.png", true),
-            soldier: PIXI.Texture.fromImage("images/space/soldier.png", true),
-            hives: PIXI.Texture.fromImage("images/space/station3.png", true)
-          }
-        }
-
-
-      }
 
       function checklife(b) {
 
@@ -168,52 +137,88 @@
       // }
 
       function update(time) {
+        if(!self.running){
+          return;
+        }
+
         var delta = ~~((time || 0) - prevTime);
         prevTime = time;
-        beesServ.update(delta).then(function() {
+        var updatePromise = beesServ.update(delta)
 
-          beesServ.flowers.forEach(function(v) {
-            v = updateFields.apply(self, [v, 'flowers']);
-            if (beesConfig.usePixi && v) {
-              updateSprite(v, 'flowers', delta);
-            }
-          });
-          self.flowers = self.flowers.filter(checklife);
+        if (updatePromise) {
+          updatePromise.then(function() {
 
-          beesServ.bees.forEach(function(v) {
-            v = updateFields.apply(self, [v, 'bees']);
-            if (beesConfig.usePixi) {
-              updateSprite(v, v ? v.type : '', delta);
-            }
-
-          })
-          self.bees = self.bees.filter(checklife);
-
-          beesServ.hives.forEach(function(v) {
-            v = updateFields.apply(self, [v, 'hives']);
-            if (beesConfig.usePixi && v) {
-              if (!beesConfig.beeTheme) {
-                v.rotate = (v.rotate || 0) + (0.0001 * delta);
+            beesServ.flowers.forEach(function(v) {
+              v = updateFields.apply(self, [v, 'flowers']);
+              if (beesConfig.usePixi && v) {
+                updateSprite(v, 'flowers', delta);
               }
-              updateSprite(v, 'hives', delta);
+            });
+            self.flowers = self.flowers.filter(checklife);
+
+            beesServ.bees.forEach(function(v) {
+              v = updateFields.apply(self, [v, 'bees']);
+              if (beesConfig.usePixi) {
+                updateSprite(v, v ? v.type : '', delta);
+              }
+
+            })
+            self.bees = self.bees.filter(checklife);
+
+            beesServ.hives.forEach(function(v) {
+              v = updateFields.apply(self, [v, 'hives']);
+              if (beesConfig.usePixi && v) {
+                if (!beesConfig.beeTheme) {
+                  v.rotate = (v.rotate || 0) + (0.0001 * delta);
+                }
+                updateSprite(v, 'hives', delta);
+              }
+            })
+            self.hives = self.hives.filter(checklife);
+
+            if (beesConfig.usePixi) {
+              renderer.render(stage);
             }
-          })
-          self.hives = self.hives.filter(checklife);
 
-          if (beesConfig.usePixi) {
-            renderer.render(stage);
-          }
-
-          requestAnimFrame(update);
-        }, function() {
-          requestAnimFrame(update);
-        });
+            requestAnimFrame(update);
+          }, function() {
+            requestAnimFrame(update);
+          });
+        }else{
+          self.init();
+        }
       };
-
 
 
       self.init = function() {
         beesServ.reset();
+
+        self.cost = {};
+        self.player = -1;
+        self.bees = [];
+        self.hives = [];
+        self.flowers = [];
+        self.colors = beesConfig.colors;
+        beesServ.territories = startTerritory(beesConfig.width, beesConfig.height);
+        self.usePixi = beesConfig.usePixi;
+
+        if (beesConfig.usePixi) {
+          if (beesConfig.beeTheme) {
+            textures = {
+              flowers: PIXI.Texture.fromImage("images/bees2/flower.png"),
+              drone: PIXI.Texture.fromImage("images/bees2/drone.png", true),
+              soldier: PIXI.Texture.fromImage("images/bees2/soldier.png", true),
+              hives: PIXI.Texture.fromImage("images/bees2/hive.png", true)
+            }
+          } else {
+            textures = {
+              flowers: PIXI.Texture.fromImage("images/space/ast2.png"),
+              drone: PIXI.Texture.fromImage("images/space/ship.png", true),
+              soldier: PIXI.Texture.fromImage("images/space/soldier.png", true),
+              hives: PIXI.Texture.fromImage("images/space/station3.png", true)
+            }
+          }
+        }
 
         if (beesConfig.usePixi) {
           renderer = new PIXI.autoDetectRenderer(beesConfig.width + 200, beesConfig.height + 200, {
@@ -248,6 +253,7 @@
         self.hives = beesServ.hives;
         self.colors = beesConfig.colors;
         self.flowers = beesServ.flowers;
+        self.running = true;
 
         $timeout(function() {
           self.scaler = 0.9; //(1 / beesConfig.width) * window.innerWidth * 0.85;
@@ -424,7 +430,12 @@
         setTimeout(beesServ.updateFlowers, 500);
       });
 
+      $scope.$on('$destroy', function(){
+        self.running = false;
+      })
+
       self.init();
+
 
       // beesServ.createBee(1, null, 'soldier', 400, 400);
       // beesServ.createBee(2, null, 'soldier', 600, 600);
