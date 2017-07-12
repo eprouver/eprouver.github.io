@@ -1,5 +1,5 @@
 (function(module) {
-  var testingtime = 1;
+  var testingtime = 1.75;
 
   var worker = new Worker('workers/bees.js');
   //AABB testing
@@ -39,7 +39,7 @@
   module.service('beesConfig', function() {
     return {
       player: -1,
-      players: 10,
+      players: 3,
       height: window.innerHeight,
       width: window.innerWidth,
       flowers: 15,
@@ -47,7 +47,9 @@
       precision: 1,
       hiveLust: 0.58,
       //colors: d3.scale.category10().domain(d3.range(10)),
-      colors: d3.scale.ordinal().domain(d3.range(10)).range(["#f44336", "#e91e63", "#673ab7", "#2196f3", "#10bcd4", "#4caf50", "#C6FF00", "#ffeb3b", "#ff9800", "#795548", "#9e9e9e", "#607d8b"].sort(function(){ return Math.random() - 0.5})),
+      colors: d3.scale.ordinal().domain(d3.range(10)).range(["#ff4336", "#EC407A", "#7C4DFF", "#2196f3", "#10bcd4", "#4caf50", "#C6FF00", "#ffeb3b", "#ff9800", "#795548", "#9e9e9e", "#607d8b"].sort(function() {
+        return Math.random() - 0.5
+      })),
       pollenRate: 1 * testingtime,
       usePixi: true,
       beeTheme: true,
@@ -94,7 +96,7 @@
       },
       intrudercheck: 10,
       startPollen: {
-        hive: 100,
+        hive: 120,
         flower: 500
       }
     };
@@ -118,8 +120,6 @@
   function distance(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))
   }
-
-
 
 
   /*Bees Service*/
@@ -152,9 +152,11 @@
           type: type,
           pollen: beesConfig.startPollen.flower,
           life: 1,
-          targetScale: beesConfig.beeTheme ? 2: 1,
+          targetScale: beesConfig.beeTheme ? 2 : 1,
           transitionTime: 0,
-          team: -1
+          team: -1,
+          rotate: 0,
+          currentRotation: 0
         });
 
         setTimeout(self.updateFlowers, 200);
@@ -178,7 +180,9 @@
           pollen: pollen || 0,
           maxPollen: beesConfig.maxpollen,
           targetScale: 1,
-          transitionTime: 0
+          transitionTime: 0,
+          rotate: 0,
+          currentRotation: 0
         }
 
         self.bees.push(bee);
@@ -214,7 +218,7 @@
           type: 'hive',
           costs: 0,
           targetScale: 1,
-          rotate: ~~(Math.random()* Math.PI * 2),
+          rotate: ~~(Math.random() * Math.PI * 2),
           transitionTime: 0
         };
 
@@ -241,12 +245,12 @@
           self.createFlower('flower');
         };
 
-        setTimeout(function(){
+        setTimeout(function() {
           //Update the location of each flower (which territory is it in?)
           _(self.flowers).each(function(f) {
             var team = self.territories.findTerritory(f.x, f.y);
 
-            if(team !== undefined && team != f.team){
+            if (team !== undefined && team != f.team) {
               f.team = team;
               f.transitionTime = 1;
             }
@@ -261,25 +265,22 @@
       var gohomebee = function(b) {
         b.goal = undefined;
 
-        //if(!b.home){
-          b.home = self.hives.filter(function(h){ return h.team == b.team }).sort(function(f,s){
-            return distance(b.x,b.y,f.x,f.y) - distance(b.x,b.y,s.x,s.y)
-          })[0];
-        //}
+        b.home = self.hives.filter(function(h) {
+          return h.team == b.team
+        }).sort(function(f, s) {
+          return distance(b.x, b.y, f.x, f.y) - distance(b.x, b.y, s.x, s.y)
+        })[0];
 
-        if(!b.home){
-          if(b.pollen > beesConfig.cost.drone){
-            b.goal = 'buildHive';
-          }else{
-            b.target = undefined;
-            b.goal = undefined;
+        if (!b.home) {
+          if (b.pollen > beesConfig.cost.drone * 2) {
+            b.goal = 'takeLand';
           }
           return;
         }
 
-
         b.dx = b.home.x;
         b.dy = b.home.y;
+        b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy || 0));
 
         return;
       }
@@ -335,10 +336,10 @@
         }).each(function(h) {
           var team = self.teams[h.team];
 
-          if(team.drones < team.hives && h.pollen > beesConfig.cost.drone){
-              self.createBee(h.team, h, 'drone', h.x, h.y);
-              h.costs += beesConfig.cost.drone;
-              return;
+          if (team.drones < team.hives && h.pollen > beesConfig.cost.drone) {
+            self.createBee(h.team, h, 'drone', h.x, h.y);
+            h.costs += beesConfig.cost.drone;
+            return;
           }
 
           //If there aren't enough soldiers, make one first
@@ -419,23 +420,46 @@
             if (b.dx > beesConfig.width) b.dx = beesConfig.width;
             if (b.dy > beesConfig.height) b.dy = beesConfig.height;
 
-            b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
+            var target = Math.abs(b.rotate - b.currentRotation);
+
+            if (target > 0.1) {
+              var direction = Math.cos(b.currentRotation) * Math.sin(b.rotate) - Math.cos(b.rotate) * Math.sin(b.currentRotation);
+              if (direction >= 0 && b.currentRotation <= b.rotate) {
+                //clockwise
+                b.currentRotation = b.currentRotation + 0.0025 * delta;
+
+              } else if (direction < 0 && b.currentRotation >= b.rotate) {
+                //counterclockwise
+                b.currentRotation = b.currentRotation - 0.0025 * delta;
+              } else {
+                b.currentRotation = d3.interpolateNumber(b.currentRotation || 0, b.rotate || 0)(0.0005 * delta);
+
+              }
+
+              if (!b.currentRotation) {
+                b.currentRotation = 0;
+                b.rotate = 0;
+              }
+            }
 
             //Move the bee
             if (Math.abs(b.x - b.dx) > beesConfig.precision || Math.abs(b.y - b.dy) > beesConfig.precision) {
               b.idle = 0;
-              // var turning =  1 - Math.abs(Math.cos(b.currentRotation) * Math.sin(b.rotate) - Math.cos(b.rotate) * Math.sin(b.currentRotation)) ;
-              var turning =  (2 * Math.PI - Math.abs((b.rotate || 0) - (b.currentRotation || 0))) / (2 * Math.PI);
-              turning = Math.pow(turning, 5);
+              var turning = (2 * Math.PI - Math.abs((b.rotate || 0) - (b.currentRotation || 0))) / (2 * Math.PI);
+              var turning2 = Math.pow(turning, 4);
 
-              var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y)) ;
-              var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;
-              var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning;
+              var length = Math.sqrt((b.dx - b.x) * (b.dx - b.x) + (b.dy - b.y) * (b.dy - b.y));
+              var newX = b.x + (((b.dx - b.x) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning2;
+              var newY = b.y + (((b.dy - b.y) / length) * beesConfig.speeds[b.type] * (delta || 1)) * turning2;
 
               //Clamp the travel to prevent overshoot
               if (distance(b.x, b.y, b.dx, b.dy) > distance(newX, newY, b.dx, b.dy)) {
+                //b.x = newX + -Math.sin(b.currentRotation) * delta * 0.045 / Math.max(turning, 1);
+                //b.y = newY + Math.sin(b.currentRotation) * delta * 0.045 / Math.max(turning, 1);
                 b.x = newX;
                 b.y = newY;
+
+
               } else {
                 b.x = b.dx;
                 b.y = b.dy;
@@ -444,7 +468,7 @@
             } else {
               b.idle = (b.idle || 0) + (1 * delta);
 
-              if(b.idle > beesConfig.bee.idle){
+              if (b.idle > beesConfig.bee.idle) {
                 gohomebee(b);
                 return;
               }
@@ -453,7 +477,7 @@
                 if (self.createHive(b.team, b.x, b.y, b.pollen / 2)) {
                   b.life = -1;
                   b.goal = undefined;
-                }else{
+                } else {
                   gohomebee(b);
                 }
 
@@ -534,31 +558,35 @@
         self.flowers = _(self.flowers).filter(checklife);
 
         //update moving targets
-        _.chain(self.bees).filter(function(b){
+        _.chain(self.bees).filter(function(b) {
           return b.type == 'soldier';
-        }).filter(function(b){
+        }).filter(function(b) {
           return b.target && b.target.type;
-        }).each(function(b){
-          if(b.target.type == 'hive'){
-            b.target = _(self.hives).find({id: b.target.id});
-          }else{
-            b.target = _(self.bees).find({id: b.target.id});
+        }).each(function(b) {
+          if (b.target.type == 'hive') {
+            b.target = _(self.hives).find({
+              id: b.target.id
+            });
+          } else {
+            b.target = _(self.bees).find({
+              id: b.target.id
+            });
           }
 
         })
 
         try {
           var transfer = JSON.stringify({
-            bees: self.bees.map(function(b){
+            bees: self.bees.map(function(b) {
               return removeSprite(b);
             }),
-            hives: self.hives.map(function(b){
+            hives: self.hives.map(function(b) {
               return removeSprite(b);
             }),
-            flowers: self.flowers.map(function(b){
+            flowers: self.flowers.map(function(b) {
               return removeSprite(b);
             }),
-            teams: self.teams.map(function(b){
+            teams: self.teams.map(function(b) {
               return removeSprite(b);
             }),
             delta: delta,

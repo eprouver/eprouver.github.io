@@ -122,33 +122,14 @@
         v.sprite.position.x = v.x + 100;
         v.sprite.position.y = v.y + 100;
 
-
-        // if(v.rotate != undefined && v.currentRotation != undefined){
-        //   var target = Math.abs(v.rotate - v.currentRotation);
-        //
-        //   if(target > 0){
-        //     var direction = Math.cos(v.currentRotation) * Math.sin(v.rotate) - Math.cos(v.rotate) * Math.sin(v.currentRotation);
-        //     if (direction > 0) {
-        //       //clockwise
-        //       v.currentRotation = v.currentRotation + Math.abs(v.currentRotation / v.rotate) * 0.01 * delta;
-        //
-        //     } else {
-        //       //counterclockwise
-        //       v.currentRotation = v.currentRotation - Math.abs(v.currentRotation / v.rotate) * 0.01 * delta;
-        //     }
-        //   }
-        //
-        //   if(target < 0.01){
-        //     v.currentRotation = v.rotate;
-        //   }
-        //
-        //           v.sprite.rotation = v.currentRotation;
-        // }
-
-        v.currentRotation = d3.interpolateNumber(v.currentRotation || 0, v.rotate || 0)(0.0025 * delta);
         v.sprite.rotation = v.currentRotation;
-      }
 
+        // if (v.type == 'drone' || v.type == 'soldier') {
+        //   v.sprite.position.x += Math.random() * 2 - 1;
+        //   v.sprite.position.y += Math.random() * 2 - 1;
+        //   v.sprite.rotation += Math.random() * 0.2 - 0.1;
+        // }
+      }
 
       // to render svg into pixi (mini map?)
       // var s = new XMLSerializer();

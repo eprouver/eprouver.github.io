@@ -14,8 +14,24 @@ self.addEventListener('message', function(e) {
 
   var gohomebee = function(b) {
     b.goal = undefined;
+
+    b.home = beesData.hives.filter(function(h) {
+      return h.team == b.team
+    }).sort(function(f, s) {
+      return distance(b.x, b.y, f.x, f.y) - distance(b.x, b.y, s.x, s.y)
+    })[0];
+
+    if (!b.home) {
+      if (b.pollen > beesConfig.cost.drone * 2) {
+        b.goal = 'takeLand';
+      }
+      return;
+    }
+
     b.dx = b.home.x;
     b.dy = b.home.y;
+    b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy || 0));
+
     return;
   }
 
@@ -121,6 +137,7 @@ self.addEventListener('message', function(e) {
         if (b.target) {
           b.dx = b.target.x;
           b.dy = b.target.y;
+          b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
           return;
         } else if (b.team != beesConfig.player && beesData.teams[b.team].soldiers > Math.max(beesData.teams[b.team].hives, 3)) {
           //Find a weaker team to attack (or any team);
@@ -141,6 +158,7 @@ self.addEventListener('message', function(e) {
               b.dx = weak.x;
               b.dy = weak.y;
               b.target = weak;
+              b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
             }
 
           }
@@ -163,12 +181,14 @@ self.addEventListener('message', function(e) {
           //My target left my territory
           b.dx = b.x;
           b.dy = b.y;
+          b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
           b.target = undefined;
           gohomebee(b);
           return;
         }else{
           b.dx = b.target.x;
           b.dy = b.target.y;
+          b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
         }
 
 
@@ -196,6 +216,10 @@ self.addEventListener('message', function(e) {
   beesData.hives.forEach(function(h1) {
     if (h1.life < beesConfig.life.hive) {
       h1.life += beesConfig.hive.repair * delta;
+    }
+
+    if(!beesConfig.beeTheme){
+      h1.currentRotation += 0.00025 * delta;
     }
 
     //if you have no pollen subtract life
@@ -246,6 +270,7 @@ self.addEventListener('message', function(e) {
       if (b.target) {
         b.dx = b.target.x;
         b.dy = b.target.y;
+        b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
       }
       return;
     } else if (readytargets.length) {
@@ -255,6 +280,7 @@ self.addEventListener('message', function(e) {
       if (b.target) {
         b.dx = b.target.x;
         b.dy = b.target.y;
+        b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
       }
       return;
     } else {
@@ -339,6 +365,7 @@ self.addEventListener('message', function(e) {
 
                   b.dx = f.x + (beesConfig.hive.width * 2 * loc[0]);
                   b.dy = f.y + (beesConfig.hive.height * 2 * loc[1]);
+                  b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
                 }
               }
 
@@ -374,6 +401,7 @@ self.addEventListener('message', function(e) {
                   var dist = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
                   b.dx = b.x + (x / dist) * beesConfig.hive.width * 2;
                   b.dy = b.y + (y / dist) * beesConfig.hive.height * 2;
+                  b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
                   return;
                 }
               }
@@ -381,6 +409,7 @@ self.addEventListener('message', function(e) {
               //go home
               b.dx = b.home.x;
               b.dy = b.home.y;
+              b.rotate = Math.PI - Math.atan2(b.x - (b.dx || 0), b.y - (b.dy|| 0));
               return;
             }
           }
