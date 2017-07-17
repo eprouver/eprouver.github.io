@@ -32,6 +32,8 @@ angular.module('frontsApp')
 
       function redraw(x, y, team) {
         $('.remove-me').detach();
+        var terr = $('#territory');
+        if(terr.attr('width').indexOf('{') == -1 && terr.attr('height').indexOf('{') == -1)
         $("#territory").addClass('aniated fadeIn territory-board').clone().attr('width', width).attr('height', height).removeClass('fadeIn').addClass('remove-me animated fadeOut territory-board').insertAfter('#territory');
 
         svg.attr('class', 'updated-territory')

@@ -1,16 +1,62 @@
 <div id="bees-holder">
   <div class="impress">
-    <div class="step slide" data-x="-100" data-y="-150" data-z="100" data-rotate-x="50">
-      <bees-board ng-if="currentSlide == 0"></bees-board>
+    <div class="step slide" data-x="-100" data-y="-350" data-z="100" data-rotate-x="50">
+      <h1>Choose Your Game:</h1>
+      <div class="row">
+        <div class="col-xs-6">
+          <svg width="100%" height="100%" viewBox="0 0 350 115" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+<path d="M 30 115 q 150 -100 300 0" id="MyPath" />
+  </defs>
+
+<g font-family="Arial, sans-serif">
+  <text text-anchor="middle" stroke="black" stroke-width="20" stroke-linejoin="round">
+    <textPath xlink:href="#MyPath" startOffset="50%" font-size="70">
+      Backyard Bees
+    </textPath>
+  </text>
+      <text text-anchor="middle" fill="white" >
+    <textPath xlink:href="#MyPath" startOffset="50%" font-size="70">
+      Backyard Bees
+    </textPath>
+  </text>
+    </g>
+</svg>
+        </div>
+        <div class="col-xs-6">
+          <svg width="100%" height="100%" viewBox="0 0 350 115" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+          <path d="M 30 115 q 150 -100 300 0" id="MyPath1" />
+            </defs>
+
+          <g font-family="Arial, sans-serif">
+            <text text-anchor="middle" stroke="black" stroke-width="20" stroke-linejoin="round">
+              <textPath xlink:href="#MyPath1" startOffset="50%" font-size="70">
+                Super Spaceships
+              </textPath>
+            </text>
+                <text text-anchor="middle" fill="white" >
+              <textPath xlink:href="#MyPath1" startOffset="50%" font-size="70">
+                Super Spaceships
+              </textPath>
+            </text>
+              </g>
+          </svg>
+        </div>
+      </div>
     </div>
 
-    <div class="step slide" data-x="100" data-y="150" data-z="600" data-rotate-x="90">
-      <bees-board ng-if="currentSlide == 1"></bees-board>
+    <div class="step slide" data-x="100" data-y="250" data-z="600" data-rotate-x="90">
+      <bees-board ng-if="currentSlide == 1" data-config="{height: 700, width: 900, scaler: 0.99, players: 2}"></bees-board>
+    </div>
+
+    <div class="step slide" data-x="100" data-y="450" data-z="1600" data-rotate-x="150">
+      <bees-board ng-if="currentSlide == 2" data-config="{height: 900, width: 1100, scaler: 0.96, players: 4}"></bees-board>
     </div>
   </div>
 
   <div class="controls controls-top">
-  <button ng-click="$emit('previousSlide')">Previous</button>
-  <button ng-click="$emit('nextSlide')">Next</button>
+    <button ng-click="$emit('previousSlide')">Previous</button>
+    <button ng-click="$emit('nextSlide')">Next</button>
   </div>
 </div>

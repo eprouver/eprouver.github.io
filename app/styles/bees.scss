@@ -136,6 +136,7 @@
           border-radius: 1em;
           font-size: 11px;
           margin: 0 8%;
+          line-height: 1.4em;
         }
       }
 
@@ -190,5 +191,27 @@
       }
     }
   }
+}
+
+.step {
+    position: relative;
+    width: 900px;
+    box-sizing: border-box;
+}
+.slide {
+    display: block;
+    width: 900px;
+    height: 700px;
+    border: 1px solid #aaa;
+    color: rgb(102, 102, 102);
+    opacity: 0.3;
+    line-height: 4em;
+    -webkit-transition: opacity 0.3s ease;
+    pointer-events:none;
+    overflow:hidden;
+}
+.step.active{
+    opacity: 1;
+    pointer-events:auto;
 }
 // Change these

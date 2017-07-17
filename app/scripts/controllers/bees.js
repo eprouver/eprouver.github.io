@@ -26,9 +26,14 @@
         restrict: 'E',
         replace: true,
         templateUrl: 'views/beesboard.html',
+        scope: {
+          config: '='
+        },
         controllerAs: 'bees',
         controller: ['$scope', function($scope) {
-
+          if($scope.config){
+            beesConfig.setConfig($scope.config);
+          }
 
           var self = this;
           var prevTime = 0;
@@ -235,7 +240,7 @@
             self.running = true;
 
             $timeout(function() {
-              self.scaler = 0.9; //(1 / beesConfig.width) * window.innerWidth * 0.85;
+              self.scaler = beesConfig.scaler; //(1 / beesConfig.width) * window.innerWidth * 0.85;
 
               if (beesConfig.usePixi) {
                 renderer = new PIXI.autoDetectRenderer(beesConfig.width + 200, beesConfig.height + 200, {
@@ -273,7 +278,9 @@
               var hive = _(beesServ.hives).find({
                 team: beesConfig.player
               });
-              iscroll.scrollTo(0, -window.innerHeight * self.scaler * 0.1, 0)
+              if(window.iscroll !== undefined){
+                iscroll.scrollTo(0, -window.innerHeight * self.scaler * 0.1, 0)
+              }
 
             }, 100)
 
@@ -397,7 +404,7 @@
 
           $scope.$on('$destroy', function() {
             self.running = false;
-            if (beesConfig.usePixi) {
+            if (beesConfig.usePixi && stage && renderer) {
               stage.destroy();
               renderer.destroy();
             }

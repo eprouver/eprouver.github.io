@@ -1,7 +1,7 @@
 <div id="bees" class="animated fadeIn" ng-class="{pixi: bees.usePixi}">
   <div id="scroller" ng-dblclick="showMe = !showMe">
     <div ng-style="bees.boardSize(bees.scaler)">
-      <div id="scaler" style="transform: scale({{bees.scaler}}); transform-origin: 0 0">
+      <div id="scaler" style="transform: scale({{bees.scaler}}); transform-origin: 50% 50%">
 
         <div id="territory-holder">
           <svg id="territory" width="{{bees.boardSize().width}}px" height="{{bees.boardSize().height}}px" class="board" ng-style="bees.boardSize()">
@@ -27,7 +27,7 @@
           <div class="hive" ng-repeat="h in bees.hives" ng-class="{selectedHive: h == bees.selectedHive, mine: h.team == bees.player}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: h.x, top: h.y, height: h.h, width: h.w, marginTop: -h.h/2, marginLeft: -h.w /2}">
             <div class="icon"></div>
             <div circle-gauge min="0" max="{{h.maxLife}}" value="h.life" back="#000" display="{{bees.colors(h.team)}}" radius="{{h.w / 2}}" thickness="3"></div>
-            <p ng-if="::h.team == bees.player || bees.player == -1">&diams; {{h.pollen | number: 0}}</p>
+            <p ng-if="::h.team == bees.player || bees.player == -1"><i class="fa fa-tint"></i> {{h.pollen | number: 0}}</p>
           </div>
 
           <div class="bee" ng-repeat="b in bees.bees" ng-class="{mine: b.team == bees.player, selectedBee: b == bees.selectedBee, soldier: b.type == 'soldier', drone: b.type == 'drone'}" ng-style="{transform: 'scale('+(1/bees.zoomer)+')', left: b.x, top: b.y, height: b.h, width: b.w, marginTop: -b.h/2, marginLeft: -b.w/2}">

@@ -164,18 +164,6 @@
 
                 $scope.$on('initImpress', function () {
                     slides = $($element).find('.step');
-               /*     var meta = $('meta[name="viewport"]') || document.createElement('meta');
-                    meta.content = 'width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no';
-                    if (meta.parentNode !== document.head) {
-                        meta.name = 'viewport';
-                        document.head.appendChild(meta[0]);
-                    } */
-
-                    document.documentElement.style.height = '100%';
-
-                    $(document.body).css({
-                        overflow: 'hidden'
-                    });
 
                     window.addEventListener('resize', throttle(function () {
                         // force going to active step again, to trigger rescaling
@@ -238,6 +226,7 @@
                     $scope.goToSlide(0);
 
                     document.addEventListener('keydown', function (e) {
+                      return;
                         var keyCode = e.keyCode || e.which,
                             arrow = {
                                 left: 37,
