@@ -8,7 +8,7 @@
  * Factory in the frontsApp.
  */
 angular.module('frontsApp')
-  .factory('startTerritory', ['beesConfig', function(beesConfig) {
+  .factory('startTerritory', ['beesConfig', 'oldboards', function(beesConfig, oldboards) {
     return function(width, height) {
       var vertices = [];
 
@@ -22,7 +22,7 @@ angular.module('frontsApp')
         .attr("viewBox", "0 0 " + width + ' ' + height)
 
       var maing = svg.append('g')
-        .attr('filter', (beesConfig.beeTheme ? 'url(#borders)' : 'url(#blur)'))
+       .attr('filter', (beesConfig.beeTheme ? 'url(#borders)' : 'url(#blur)'))
 
       var path = maing.append("g").selectAll("path");
 
@@ -31,8 +31,9 @@ angular.module('frontsApp')
       }
 
       function redraw(x, y, team) {
-        $('.remove-me').remove();
-        $("#territory").addClass('aniated fadeIn territory-board').clone().removeClass('fadeIn').addClass('remove-me animated fadeOut territory-board').insertAfter('#territory');
+        $('.remove-me').detach();
+        $("#territory").addClass('aniated fadeIn territory-board').clone().attr('width', width).attr('height', height).removeClass('fadeIn').addClass('remove-me animated fadeOut territory-board').insertAfter('#territory');
+
         svg.attr('class', 'updated-territory')
         var borders = [];
 
@@ -111,7 +112,7 @@ angular.module('frontsApp')
         })
 
         path.order();
-
+        oldboards.push($('.updated-territory').clone().attr('width', width).attr('height', height)[0]);
       }
 
       function inside(x, y, vs) {
@@ -149,6 +150,34 @@ angular.module('frontsApp')
             }
           }
         }
+      }
+    }
+  }]);
+
+  angular.module('frontsApp')
+  .service('oldboards', [function(){
+    var boards = [];
+    var s = new XMLSerializer();
+    function svgToSprite(svg){
+      $('body').append($(svg).attr('class', '').css({
+        width: 50,
+        height: 50
+      }))
+      var texture = new PIXI.Texture.fromImage('data:image/svg+xml;charset=utf8,' + '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' + s.serializeToString(svg));
+      var bkg = new PIXI.Sprite(texture);
+
+      return bkg;
+    }
+
+    return {
+      push: function(svg){
+        boards.push(svgToSprite(svg))
+      },
+      get: function(){
+        return boards;
+      },
+      reset: function(){
+        boards = [];
       }
     }
   }]);

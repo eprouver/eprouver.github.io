@@ -1,4 +1,4 @@
-#bees {
+#bees-holder {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -8,164 +8,187 @@
   padding: 10vmin;
   background: #222;
 
-  .fadeIn, .fadeOut{
-    animation-duration: 0.35s;
-  }
+  .controls{
+    position:fixed;
 
-  &.pixi{
-    .icon{
-      display:none;
+    &.controls-top{
+      top: 0;
+      left: 0;
     }
   }
 
-  .territory-board{
-    position:absolute;
-    top: 0;
-    left: 0;
-    overflow:hidden;
-  }
-
-  //background:black;
-  #scroller {
-    width: 100%;
-    height: 70vh;
-    overflow: visible;
-  }
-  .board-holder {
-    position: relative;
-    margin-top: -100px;
-    margin-left: -100px;
-    //background: url(../images/grass.jpg);
-  }
-  .board {
-    position: absolute;
-    top: 0;
-    left: 0;
-    &.no-touch {
-      opacity: 0.5;
-      pointer-events: none;
+  #bees {
+    .fadeIn,
+    .fadeOut {
+      animation-duration: 0.35s;
     }
-    &.selecting-board {
-      .bee,
-      .hive {
-        pointer-events: none;
-      }
-      .mine {
-        pointer-events: auto !important;
+
+    &.pixi {
+      .icon {
+        display: none;
       }
     }
-    div[circle-gauge] {
+
+    .territory-board {
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none;
+      overflow: hidden;
     }
-
-    .icon{
-      height: 100%;
+    //background:black;
+    #scroller {
       width: 100%;
-      position:relative;
-      background-size: contain !important;
+      height: 70vh;
+      overflow: visible;
     }
 
-    .options{
-      position: absolute;
-      z-index: 1;
-      background: #191919;
-      padding: 0.3em;
-      border-radius: 4em;
-
-      .btn{
-        border-radius: 5em;
-      }
+    .board-holder {
+      position: relative;
+      margin-top: -100px;
+      margin-left: -100px;
+      //background: url(../images/grass.jpg);
     }
-    .flower {
+
+    .board {
       position: absolute;
+      top: 0;
+      left: 0;
 
-      .icon{
-        background: url(../images/bees/flower.svg) center center no-repeat;
-      }
-    }
-    .hive {
-      text-align: center;
-      position: absolute;
-      padding: 10px;
-
-      .options {
-        width: 13em;
-        top: -39px;
-        left: -4.3em;
+      &.no-touch {
+        opacity: 0.5;
+        pointer-events: none;
       }
 
-      .icon{
-        background: url(../images/bees/hive.svg) center center no-repeat;
-      }
+      &.selecting-board {
+        .bee,
+        .hive {
+          pointer-events: none;
+        }
 
-      &.selectedHive {
-        background-color: rgba(255,255,0,0.5) !important;
-        z-index: 9;
-        border-radius: 10em;
-      }
-      p {
-        color: yellow;
-        position: absolute;
-        width: 86%;
-        text-align: center;
-        left: 0;
-        bottom: -13px;
-        background: rgba(0,0,0,0.5);
-        border-radius: 1em;
-        font-size: 11px;
-        margin: 0 8%;
-      }
-    }
-    .bee {
-      position: absolute;
-      padding: 10px;
-
-      .icon{
-        background: url(../images/bees/bee.svg) center center no-repeat;
-      }
-
-      .options{
-        top: -35px;
-        min-width: 5em;
-        text-align: center;
-        left: -0.7em;
-      }
-
-      div[circle-gauge] {
-        &.inner-gauge {
-          top: 3px;
-          left: 3px;
+        .mine {
+          pointer-events: auto !important;
         }
       }
 
-      //transition: top 0.1s linear, left 0.1s linear;
-      &.selectedBee {
-        background-color: rgba(255,255,0,0.5) !important;
-        z-index: 9;
-        border-radius: 10em;
-      }
-      &.soldier {
-        //box-shadow: 0 0 0 4px red;
-        border-radius: 10em;
-      }
-    }
-    #drone-view {
-      .hive {
+      div[circle-gauge] {
+        position: absolute;
+        top: 0;
+        left: 0;
         pointer-events: none;
       }
-      .flower {
-        border: 5px solid yellow;
+
+      .icon {
+        height: 100%;
+        width: 100%;
+        position: relative;
+        background-size: contain !important;
       }
-    }
-    #soldier-view {
+
+      .options {
+        position: absolute;
+        z-index: 1;
+        background: #191919;
+        padding: 0.3em;
+        border-radius: 4em;
+
+        .btn {
+          border-radius: 5em;
+        }
+      }
+
+      .flower {
+        position: absolute;
+
+        .icon {
+          background: url("../images/bees/flower.svg") center center no-repeat;
+        }
+      }
+
       .hive {
-        border: 3px solid yellow;
+        text-align: center;
+        position: absolute;
+        padding: 10px;
+
+        .options {
+          width: 13em;
+          top: -39px;
+          left: -4.3em;
+        }
+
+        .icon {
+          background: url("../images/bees/hive.svg") center center no-repeat;
+        }
+
+        &.selectedHive {
+          background-color: rgba(255,255,0,0.5) !important;
+          z-index: 9;
+          border-radius: 10em;
+        }
+
+        p {
+          color: yellow;
+          position: absolute;
+          width: 86%;
+          text-align: center;
+          left: 0;
+          bottom: -13px;
+          background: rgba(0,0,0,0.5);
+          border-radius: 1em;
+          font-size: 11px;
+          margin: 0 8%;
+        }
+      }
+
+      .bee {
+        position: absolute;
+        padding: 10px;
+
+        .icon {
+          background: url("../images/bees/bee.svg") center center no-repeat;
+        }
+
+        .options {
+          top: -35px;
+          min-width: 5em;
+          text-align: center;
+          left: -0.7em;
+        }
+
+        div[circle-gauge] {
+          &.inner-gauge {
+            top: 3px;
+            left: 3px;
+          }
+        }
+        //transition: top 0.1s linear, left 0.1s linear;
+        &.selectedBee {
+          background-color: rgba(255,255,0,0.5) !important;
+          z-index: 9;
+          border-radius: 10em;
+        }
+
+        &.soldier {
+          //box-shadow: 0 0 0 4px red;
+          border-radius: 10em;
+        }
+      }
+
+      #drone-view {
+        .hive {
+          pointer-events: none;
+        }
+
+        .flower {
+          border: 5px solid yellow;
+        }
+      }
+
+      #soldier-view {
+        .hive {
+          border: 3px solid yellow;
+        }
       }
     }
   }
 }
-
 // Change these

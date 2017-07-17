@@ -9,9 +9,5 @@
  */
 angular.module('frontsApp')
   .controller('StoryCtrl', function () {
-    this.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
+
   });

@@ -10,7 +10,8 @@
  */
 angular
   .module('frontsApp', [
-    'ngRoute'
+    'ngRoute',
+    'impressjs'
   ])
   .config(function ($routeProvider) {
     $routeProvider
@@ -27,12 +28,17 @@ angular
       .when('/bees', {
         templateUrl: 'views/bees.html',
         controller: 'BeesCtrl',
-        controllerAs: 'bees'
+        controllerAs: 'beesholder'
       })
       .when('/story', {
         templateUrl: 'views/story.html',
         controller: 'StoryCtrl',
         controllerAs: 'story'
+      })
+      .when('/adventure', {
+        templateUrl: 'views/adventure.html',
+        controller: 'AdventureCtrl',
+        controllerAs: 'adventure'
       })
       .otherwise({
         redirectTo: '/'
